@@ -51,7 +51,7 @@ export function searchKB(query: string, topK = 3): SearchHit[] {
   for (const chunk of KB_CHUNKS) {
     const tf = termFreq(chunk.content.toLowerCase(), terms)
     let score = 0
-    for (const [t, c] of tf) score += c
+    for (const c of tf.values()) score += c
     /* 预定义关键词命中加权 */
     const kw = chunk.keywords.filter((k) => query.toLowerCase().includes(k.toLowerCase())).length
     score += kw * 5
