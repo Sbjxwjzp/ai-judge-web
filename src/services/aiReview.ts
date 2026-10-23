@@ -5,6 +5,7 @@
    ============================================================ */
 import { chatStream, extractJson, llmConfig, LLMError } from './llm'
 import { buildSystemPrompt, buildUserPrompt } from './prompts'
+import { searchKB, formatKBContext } from './rag'
 import type { Project, Question, Critique } from '@/types/engine'
 
 export interface AIEnhancement {
@@ -26,9 +27,17 @@ export async function enhanceCritique(
 ): Promise<AIEnhancement | null> {
   if (!llmConfig.enabled) return null
 
+  /* RAG：以 问题+回答+判定 为 query 检索赛题知识库，注入 Prompt */
+  const kbContext = formatKBContext(
+    searchKB([q.topic, q.text, answer, critique.verdict].join(' '), 3)
+  )
+
   const messages = [
     { role: 'system' as const, content: buildSystemPrompt() },
-    { role: 'user' as const, content: buildUserPrompt({ project, q, answer, critique }) }
+    {
+      role: 'user' as const,
+      content: buildUserPrompt({ project, q, answer, critique, kbContext })
+    }
   ]
 
   try {

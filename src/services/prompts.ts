@@ -28,6 +28,8 @@ export interface PromptInput {
   q: Question
   answer: string
   critique: Critique
+  /** RAG 检索到的赛题/评分标准上下文（可选） */
+  kbContext?: string
 }
 
 export function buildUserPrompt(input: PromptInput): string {
@@ -46,6 +48,10 @@ export function buildUserPrompt(input: PromptInput): string {
     ? critique.issues.map((i, idx) => `${idx + 1}. [${i.name}] ${i.title}：${i.detail}`)
     : ['（规则引擎本轮未发现明显缺口）']
 
+  const kb = input.kbContext
+    ? ['', input.kbContext, '']
+    : []
+
   return [
     '【项目资料】',
     ...projectLines,
@@ -63,7 +69,7 @@ export function buildUserPrompt(input: PromptInput): string {
     '',
     '【规则引擎识别出的问题】',
     ...issueLines,
-    '',
+    ...kb,
     '请给出锐评增强 JSON（summary + asks）。'
   ].join('\n')
 }
