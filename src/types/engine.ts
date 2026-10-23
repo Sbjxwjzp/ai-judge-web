@@ -140,6 +140,9 @@ export interface Critique {
   nextAsks: string[]
   nextType: string | null
   nextText: string
+  /** LLM 增强锐评（由 services/aiReview 填充；纯规则引擎运行时为空） */
+  aiSummary?: string
+  aiAsks?: string[]
 }
 
 /** 一轮质询记录 */

@@ -763,6 +763,40 @@ textarea::placeholder {
 }
 
 /* AI 锐评 */
+.ai-note {
+  margin: 10px 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  background: linear-gradient(120deg, rgba(34, 211, 238, 0.09), rgba(59, 130, 246, 0.07));
+}
+.ai-note .ai-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.ai-note .ai-head .t {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  color: #67e8f9;
+}
+.ai-note .ai-text {
+  margin: 0;
+  font-size: 14.2px;
+  line-height: 1.7;
+  color: #e8f4ff;
+}
+.ai-note ul {
+  margin: 4px 0 0;
+  padding-left: 17px;
+}
+.ai-note li {
+  font-size: 13.2px;
+  color: #c3dcff;
+  margin: 4px 0;
+}
 .critique {
   border: 1px solid rgba(88, 166, 255, 0.3);
   border-radius: 13px;

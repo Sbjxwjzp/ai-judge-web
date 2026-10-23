@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useSessionStore } from '@/stores/session'
 import type { Round } from '@/types/engine'
 
 const props = defineProps<{
   round: Round
 }>()
+
+const sessionStore = useSessionStore()
 
 const c = computed(() => props.round.critique)
 
@@ -24,6 +27,21 @@ const verdictTag = computed(() => {
       </span>
       <span class="tag" :class="verdictTag">{{ c.verdict }}</span>
       <span class="tag">完整度 {{ c.completeness }}%</span>
+    </div>
+
+    <!-- LLM 深度锐评（打字机流式 → 定稿；未启用/失败时此区不出现） -->
+    <div v-if="c.aiSummary || sessionStore.aiStreaming" class="ai-note">
+      <div class="ai-head">
+        <span class="t">AI 深度锐评</span>
+        <span v-if="sessionStore.aiBusy" class="tag blue">生成中…</span>
+      </div>
+      <p class="ai-text">{{ sessionStore.aiStreaming ? sessionStore.aiStreaming : c.aiSummary }}</p>
+      <template v-if="!sessionStore.aiStreaming && c.aiAsks && c.aiAsks.length">
+        <div class="k" style="margin: 10px 0 4px">评委最可能继续追问</div>
+        <ul>
+          <li v-for="(a, idx) in c.aiAsks" :key="idx">{{ a }}</li>
+        </ul>
+      </template>
     </div>
 
     <div class="issue">

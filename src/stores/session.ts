@@ -5,6 +5,7 @@
    ============================================================ */
 import { defineStore } from 'pinia'
 import { createSession, submit, buildReport, currentQuestion, progress } from '@/engine'
+import { enhanceCritique } from '@/services/aiReview'
 import type { Project, Session, SubmitResult } from '@/types/engine'
 
 const LS_KEY = 'aij_session_v1'
@@ -20,7 +21,10 @@ export const useSessionStore = defineStore('session', {
     pending: false,
     draft: '',
     toast: '',
-    toastTimer: null as ReturnType<typeof setTimeout> | null
+    toastTimer: null as ReturnType<typeof setTimeout> | null,
+    /** LLM 深度锐评：流式文本 / 是否生成中 */
+    aiStreaming: '',
+    aiBusy: false
   }),
 
   getters: {
@@ -75,8 +79,28 @@ export const useSessionStore = defineStore('session', {
           this.persist()
           if (ss.finished) this.showToast('质询链已跑完，可以生成风险报告了')
           resolve(r)
+          /* 规则判定已返回，异步生成 LLM 深度锐评（失败自动降级） */
+          this.runAiEnhance(ss)
         }, isMock ? 900 : 700)
       })
+    },
+
+    /** LLM 深度锐评（不阻塞主流程；失败时界面自动显示规则引擎版本） */
+    async runAiEnhance(ss: Session) {
+      const last = ss.rounds[ss.rounds.length - 1]
+      if (!last || last.critique.aiSummary) return
+      this.aiBusy = true
+      this.aiStreaming = ''
+      const en = await enhanceCritique(ss.project, last.q, last.answer, last.critique, (t) => {
+        this.aiStreaming += t
+      })
+      if (en) {
+        last.critique.aiSummary = en.summary
+        last.critique.aiAsks = en.asks
+        this.persist()
+      }
+      this.aiStreaming = ''
+      this.aiBusy = false
     },
 
     /** 用当前项目重新开始 */
