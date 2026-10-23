@@ -26,3 +26,6 @@ Thumbs.db
 # Misc
 *.local
 *.tsbuildinfo
+
+# 本地测试（无头 Edge 用户数据目录）
+.edge-test/

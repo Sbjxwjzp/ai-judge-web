@@ -1,0 +1,75 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { Round } from '@/types/engine'
+
+const props = defineProps<{
+  round: Round
+}>()
+
+const c = computed(() => props.round.critique)
+
+const verdictTag = computed(() => {
+  if (c.value.criticalCount) return 'red'
+  if (c.value.midCount) return 'orange'
+  return 'green'
+})
+</script>
+
+<template>
+  <div class="critique fade-in">
+    <div class="cbar">
+      <span class="t">AI 锐评</span>
+      <span :class="round.isMock ? 'tag violet' : 'tag green'">
+        {{ round.isMock ? '模拟回答' : '手动回答' }}
+      </span>
+      <span class="tag" :class="verdictTag">{{ c.verdict }}</span>
+      <span class="tag">完整度 {{ c.completeness }}%</span>
+    </div>
+
+    <div class="issue">
+      <div class="ibody" style="color: #bdcfe3">本轮问题（{{ round.q.topic }}）：{{ round.q.text }}</div>
+      <div class="iblock">
+        <div class="k">你的回答{{ round.isMock ? '（模拟回答 · 系统生成，非真实答辩内容）' : '' }}</div>
+        <div class="ibody">{{ round.answer }}</div>
+      </div>
+    </div>
+
+    <div class="issue">
+      <div class="ibody" style="color: #e6edf3"><b>分析结论：</b>{{ c.summary }}</div>
+    </div>
+
+    <template v-if="c.issues.length">
+      <div v-for="i in c.issues" :key="i.title" class="issue">
+        <div class="ihead">
+          <span class="tag" :class="i.cls || 'blue'">{{ i.name }}</span>
+          <span class="sev" :class="i.sev"></span>
+          <span class="ititle">{{ i.title }}</span>
+        </div>
+        <div class="ibody">{{ i.detail }}</div>
+        <div v-if="i.why" class="iblock">
+          <div class="k">为什么这是一个问题</div>
+          <div class="ibody">{{ i.why }}</div>
+        </div>
+        <div v-if="i.asks && i.asks.length" class="iblock">
+          <div class="k">评委可能继续追问</div>
+          <ul>
+            <li v-for="(a, idx) in i.asks" :key="idx">{{ a }}</li>
+          </ul>
+        </div>
+      </div>
+    </template>
+    <div v-else class="issue">
+      <div class="ititle">本轮没有发现明显缺口</div>
+      <div class="ibody">回答覆盖了本问要求的证据点，可以直接进入更深的层次。</div>
+    </div>
+
+    <div v-if="c.suggestions && c.suggestions.length" class="issue">
+      <div class="iblock">
+        <div class="k">建议补充的材料</div>
+        <div class="suggest-chips">
+          <span v-for="s in c.suggestions" :key="s" class="c">+ {{ s }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

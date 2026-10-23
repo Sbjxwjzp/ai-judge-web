@@ -7,6 +7,7 @@
 export interface Project {
   id: string
   kind?: string
+  type?: string
   name: string
   role?: string
   brief: string
