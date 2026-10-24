@@ -28,7 +28,9 @@ function readConfig(): LLMConfig {
     (import.meta.env.VITE_LLM_BASE_URL as string) || 'https://api.deepseek.com/v1'
   ).replace(/\/+$/, '')
   const model = (import.meta.env.VITE_LLM_MODEL as string) || 'deepseek-chat'
-  const enabled = apiKey.length > 0 && (import.meta.env.VITE_LLM_ENABLED as string) !== 'false'
+  /* 占位符（含中文/非 ASCII）视为未配置，避免误发请求 */
+  const looksReal = apiKey.length > 0 && !/[^\x00-\x7F]/.test(apiKey)
+  const enabled = looksReal && (import.meta.env.VITE_LLM_ENABLED as string) !== 'false'
   return { apiKey, baseUrl, model, enabled }
 }
 
@@ -96,6 +98,24 @@ async function request(
       body: JSON.stringify(body),
       signal: ctrl.signal
     })
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      throw new LLMError('LLM 请求超时')
+    }
+    /* 网络错误自动重试一次 */
+    try {
+      resp = await fetch(llmConfig.baseUrl + '/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + llmConfig.apiKey
+        },
+        body: JSON.stringify(body),
+        signal: ctrl.signal
+      })
+    } catch (e2) {
+      throw new LLMError('LLM 网络错误：' + (e2 instanceof Error ? e2.message : String(e2)))
+    }
   } finally {
     clearTimeout(timer)
   }

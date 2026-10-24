@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia'
 import { createSession, submit, buildReport, currentQuestion, progress } from '@/engine'
 import { enhanceCritique } from '@/services/aiReview'
+import { checkInput } from '@/services/safety'
 import type { Project, Session, SubmitResult } from '@/types/engine'
 
 const LS_KEY = 'aij_session_v1'
@@ -62,6 +63,12 @@ export const useSessionStore = defineStore('session', {
       if (t.replace(/\s/g, '').length < 4) {
         this.showToast('请先写一点内容，再提交。')
         return Promise.resolve({ error: 'too-short' })
+      }
+      /* AI 安全：内容过滤（暴力/违法/攻击性/超长） */
+      const check = checkInput(t)
+      if (!check.ok) {
+        this.showToast(check.reason || '内容不符合要求')
+        return Promise.resolve({ error: 'blocked' })
       }
       this.pending = true
       if (isMock) this.draft = t
