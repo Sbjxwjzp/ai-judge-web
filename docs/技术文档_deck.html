@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>AI刁钻评委 · 技术文档（全国高校AI Web开发挑战赛）</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  @page{size:13.333in 7.5in;margin:0}
+  html,body{background:#05080f}
+  body{font-family:"Microsoft YaHei UI","Microsoft YaHei",sans-serif;
+       -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .slide{
+    position:relative;width:13.333in;height:7.5in;overflow:visible;
+    background:#080d18;background-image:
+      radial-gradient(760pt 420pt at 8% -12%,rgba(59,130,246,.30),transparent 62%),
+      radial-gradient(620pt 360pt at 104% 4%,rgba(34,211,238,.16),transparent 60%),
+      linear-gradient(180deg,#080d18 0%,#0a1120 60%,#070b14 100%);
+    page-break-after:always;break-after:page;
+    padding:36pt 44pt 34pt;color:#e8f0fa;
+  }
+  .slide:last-child{page-break-after:auto;break-after:auto}
+  .grid-bg{position:absolute;inset:0;pointer-events:none;background-image:
+    linear-gradient(rgba(88,166,255,.055) 1.2pt,transparent 1.2pt),
+    linear-gradient(90deg,rgba(88,166,255,.055) 1.2pt,transparent 1.2pt);
+    background-size:36pt 36pt}
+  .hd{position:relative;display:flex;align-items:flex-end;justify-content:space-between;
+      border-bottom:1.6pt solid rgba(88,166,255,.34);padding-bottom:9pt;margin-bottom:20pt}
+  .hd .lb{font-size:9.5pt;letter-spacing:2.4pt;color:#58a6ff;font-weight:700;font-family:Consolas,monospace}
+  .hd h2{font-size:25pt;font-weight:800;line-height:1.16;margin-top:5pt}
+  .hd .no{font-family:Consolas,monospace;font-size:10pt;color:#5b7089;text-align:right;line-height:1.6}
+  .ft{position:absolute;left:44pt;right:44pt;bottom:15pt;display:flex;justify-content:space-between;
+      font-size:8.5pt;color:#4d6076;font-family:Consolas,monospace}
+  .cards{display:grid;gap:11pt}
+  .c2{grid-template-columns:1fr 1fr}
+  .c3{grid-template-columns:1fr 1fr 1fr}
+  .c4{grid-template-columns:repeat(4,1fr)}
+  .card{border:1pt solid rgba(88,166,255,.28);border-radius:9pt;padding:11pt 13pt;background:rgba(12,20,34,.72)}
+  .card h4{font-size:12.5pt;color:#eaf3ff;margin-bottom:5pt}
+  .card p{font-size:10.5pt;line-height:1.5;color:#a9bdd3}
+  .card.blue{border-color:rgba(88,166,255,.55);background:rgba(37,99,235,.16)}
+  .card.orange{border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.11)}
+  .card.green{border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.11)}
+  .card.cyan{border-color:rgba(34,211,238,.5);background:rgba(34,211,238,.1)}
+  .num{font-family:Consolas,monospace;font-size:9.5pt;color:#7cc4ff;letter-spacing:1pt;display:block;margin-bottom:3pt}
+  ul.bl{list-style:none}
+  ul.bl li{font-size:12pt;line-height:1.62;color:#cddcec;padding-left:16pt;position:relative;margin:5pt 0}
+  ul.bl li::before{content:"";position:absolute;left:0;top:7.5pt;width:6pt;height:6pt;border-radius:50%;
+      background:#3b82f6;box-shadow:0 0 7pt rgba(59,130,246,.9)}
+  ul.bl li b{color:#fff}
+  .flow{display:flex;align-items:stretch;gap:7pt;flex-wrap:wrap}
+  .step{flex:1;min-width:74pt;border:1pt solid rgba(88,166,255,.34);border-radius:8pt;
+        background:rgba(12,20,34,.8);padding:8pt 9pt;font-size:10pt;color:#cfe0f2;text-align:center}
+  .step b{display:block;font-size:11pt;color:#fff;margin-bottom:3pt}
+  .arw{align-self:center;color:#3b82f6;font-size:12pt;font-weight:700}
+  .tag{display:inline-block;padding:2.5pt 8pt;border:1pt solid rgba(88,166,255,.45);border-radius:20pt;
+       font-size:9.5pt;color:#a8cdf5;background:rgba(59,130,246,.13);margin:0 4pt 4pt 0}
+  .kpi{text-align:center;border:1pt solid rgba(88,166,255,.32);border-radius:9pt;padding:9pt 6pt;background:rgba(12,20,34,.75)}
+  .kpi .v{font-family:Consolas,monospace;font-size:21pt;font-weight:700;color:#7cc4ff;line-height:1.1}
+  .kpi .l{font-size:9pt;color:#8ea3ba;margin-top:3pt}
+  table{width:100%;border-collapse:collapse;font-size:10.5pt}
+  th,td{border:1pt solid rgba(88,166,255,.22);padding:5.5pt 7pt;text-align:left;vertical-align:top}
+  th{background:rgba(59,130,246,.17);color:#eaf3ff}
+  td{color:#b9cde1}
+  .quote{border-left:2.5pt solid #3b82f6;background:rgba(12,20,34,.7);border-radius:0 8pt 8pt 0;
+         padding:9pt 12pt;margin:7pt 0}
+  .quote p{font-size:11pt;line-height:1.5;color:#d6e4f2}
+  .cover{padding:0;display:flex;flex-direction:column;justify-content:center}
+  .cover .inner{position:relative;padding:0 70pt}
+  .cover .ev{font-size:10pt;letter-spacing:3pt;color:#58a6ff;font-weight:700;font-family:Consolas,monospace}
+  .cover h1{font-size:52pt;font-weight:800;margin:14pt 0 8pt;color:#fff}
+  .cover .sub{font-size:17pt;color:#c3d7ea;font-weight:600}
+  .cover .one{font-size:12.5pt;color:#9fb6cd;margin-top:14pt;padding-left:11pt;border-left:3pt solid #3b82f6}
+  .cover .meta{margin-top:26pt;font-size:10.5pt;color:#8ea3ba;line-height:2.1}
+  .cover .meta .k{color:#5f7691;display:inline-block;width:66pt}
+  .blank{display:inline-block;min-width:150pt;border-bottom:1pt solid #46617f}
+  /* 架构图 */
+  .arch{display:flex;flex-direction:column;gap:9pt;margin-top:14pt}
+  .layer{border:1pt solid rgba(88,166,255,.34);border-radius:8pt;padding:8pt 12pt;background:rgba(12,20,34,.75)}
+  .layer .ln{font-size:9pt;letter-spacing:1.5pt;color:#58a6ff;font-weight:700;font-family:Consolas,monospace;margin-bottom:4pt}
+  .layer .box{display:flex;gap:6pt;flex-wrap:wrap}
+  .layer .box span{font-size:9.5pt;color:#cfe0f2;border:1pt solid rgba(88,166,255,.3);border-radius:5pt;
+      padding:2.5pt 7pt;background:rgba(59,130,246,.08)}
+  .layer.ai span{border-color:rgba(34,211,238,.38);background:rgba(34,211,238,.08);color:#d6f5ff}
+  .arwd{text-align:center;color:#4d6076;font-size:10pt;font-family:Consolas,monospace;line-height:1}
+  /* 流程图行 */
+  .chain{display:flex;flex-direction:column;gap:6pt;margin-top:12pt}
+  .cnode{display:flex;gap:9pt;align-items:flex-start}
+  .cnode .pin{width:20pt;height:20pt;flex:none;border-radius:6pt;display:grid;place-items:center;
+      font-size:9pt;font-weight:700;color:#fff;background:linear-gradient(140deg,#2563eb,#0ea5e9)}
+  .cnode .body{font-size:10.5pt;color:#b9cde1;line-height:1.45}
+  .cnode .body b{color:#eaf3ff}
+  .sub2{font-size:10pt;color:#8ea3ba;margin-top:3pt}
+</style>
+</head>
+<body>
+
+<!-- ============ 1 封面 ============ -->
+<section class="slide cover">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="ev">全国高校AI Web开发挑战赛 · 技术文档</div>
+    <h1>AI刁钻评委</h1>
+    <div class="sub">面向大学生创新创业项目的 AI 智能评审与压力测试智能体</div>
+    <div class="one">让你的项目先接受一次 AI 压力测试，再去面对真正的评委。</div>
+    <div style="margin-top:16pt">
+      <span class="tag">AI Native Web 应用</span>
+      <span class="tag">Vue 3 + TypeScript</span>
+      <span class="tag">Agent 质询工作流</span>
+      <span class="tag">本地 RAG 检索增强</span>
+      <span class="tag">Function Calling 工具</span>
+    </div>
+    <div class="meta">
+      <div><span class="k">参赛团队</span><span class="blank"></span></div>
+      <div><span class="k">学校 / 学院</span><span class="blank"></span></div>
+      <div><span class="k">成员 / 指导教师</span><span class="blank"></span></div>
+      <div><span class="k">日期</span><span class="blank"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 今天讲几件事 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">ROADMAP</div><h2>今天讲几件事</h2></div>
+    <div class="no">CONTENTS<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c3" style="margin-top:24pt">
+    <div class="card blue"><span class="num">01</span><h4>是什么 & 为什么</h4><p>项目定位 · 真实痛点 · 需求分析</p></div>
+    <div class="card blue"><span class="num">02</span><h4>怎么构建</h4><p>系统架构 · AI 技术方案 · 核心功能实现</p></div>
+    <div class="card blue"><span class="num">03</span><h4>凭什么可信</h4><p>测试验证 · 性能工程化 · 创新点</p></div>
+  </div>
+  <div class="quote" style="margin-top:22pt">
+    <p>核心主张：<b>规则引擎管决策、LLM 管生成、RAG 管知识</b> —— 三层各司其职、失败自动降级，
+    让 AI 评审既"刁钻"又"不胡说"。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 3 项目概述 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">OVERVIEW</div><h2>项目概述：一个"答辩前压力测试"工具</h2></div>
+    <div class="no">项目概述<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c2">
+    <div class="card blue"><span class="num">定位</span><h4>AI Native Web 应用</h4>
+      <p>从设计之初就以 AI 为核心：连续质询、回答分析、追问决策、锐评、风险累计、深度评审，全部由 AI 驱动。</p></div>
+    <div class="card"><span class="num">场景</span><h4>创新创业项目答辩准备</h4>
+      <p>大学生把项目资料输入进来，AI 以资深评委身份压测：<b>回答完整 → 追问更深，有漏洞 → 针对缺口追问</b>。</p></div>
+    <div class="card"><span class="num">形态</span><h4>纯前端 Web 应用</h4>
+      <p>Vue 3 + TypeScript + Vite + Pinia，路由懒加载；AI 能力层全部浏览器端调用，可部署于任意静态托管。</p></div>
+    <div class="card green"><span class="num">结果</span><h4>可执行的改进清单</h4>
+      <p>风险总结（按优先级）＋ 答辩材料清单 ＋ 对标官方评分标准的改进路线，可直接导出 PDF。</p></div>
+  </div>
+  <div class="kpi" style="margin-top:20pt;width:100%">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11pt">
+      <div><div class="v">22 轮</div><div class="l">演示质询链（11 主线 + 11 追问）</div></div>
+      <div><div class="v">6 项</div><div class="l">AI 技术深度考察点全覆盖</div></div>
+      <div><div class="v">16 块</div><div class="l">赛题知识库检索单元</div></div>
+      <div><div class="v">0 依赖</div><div class="l">规则引擎本地运行，可离线演示</div></div>
+    </div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 4 需求分析 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">REQUIREMENTS</div><h2>需求分析：答辩前的"没人帮挑毛病"</h2></div>
+    <div class="no">需求分析<br><b class="pn"></b></div>
+  </div>
+  <table style="margin-top:8pt">
+    <tr><th style="width:30%">痛点</th><th style="width:34%">现状</th><th>方案映射</th></tr>
+    <tr><td><b style="color:#eaf3ff">缺少预演</b></td><td>答辩前很少有机会被连续追问，临场才发现漏洞</td><td>AI 连续质询 + 追问链，模拟真实评审节奏</td></tr>
+    <tr><td><b style="color:#eaf3ff">反馈笼统</b></td><td>"再想想"式意见多，缺逐条可执行的依据</td><td>每条问题给出 为什么是问题 / 评委怎么追问 / 建议补什么</td></tr>
+    <tr><td><b style="color:#eaf3ff">数据风险</b></td><td>为凑指标虚构数据，被评委一句话问穿</td><td>数据红线内置：缺失即标注"待验证"，不替你编</td></tr>
+    <tr><td><b style="color:#eaf3ff">标准不对齐</b></td><td>凭感觉准备，不清楚官方评分维度</td><td>RAG 注入官方赛题评分标准，锐评对标考察点</td></tr>
+  </table>
+  <div class="quote" style="margin-top:16pt">
+    <p>目标用户：参加创新创业类竞赛的高校学生（1–3 人团队），核心诉求是<b>答辩前低成本发现漏洞、拿到可执行的改进清单</b>。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 5 功能全景 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">FEATURES</div><h2>功能全景：一条完整的"输入 → 压测 → 报告"链路</h2></div>
+    <div class="no">功能实现<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c4">
+    <div class="card"><span class="num">F1</span><h4>项目库</h4><p>示例项目 + 自定义项目，localStorage 持久化，不上传</p></div>
+    <div class="card"><span class="num">F2</span><h4>AI 连续质询</h4><p>11 主线题 + 追问链，视觉类项目自动追加专项题</p></div>
+    <div class="card"><span class="num">F3</span><h4>AI 锐评</h4><p>规则判定骨架 + LLM 深度锐评，流式打字机呈现</p></div>
+    <div class="card"><span class="num">F4</span><h4>实时风险面板</h4><p>风险按优先级累计，评审维度得分条实时更新</p></div>
+    <div class="card"><span class="num">F5</span><h4>模拟评审报告</h4><p>结论 → 维度分 → 风险 → 建议 → 材料清单，可导出 PDF</p></div>
+    <div class="card cyan"><span class="num">F6</span><h4>AI 深度评审报告</h4><p>Agent 自主调用工具，对标官方评分标准的深度报告</p></div>
+    <div class="card"><span class="num">F7</span><h4>语音输入</h4><p>Web Speech API，普通话语音转文字填入回答</p></div>
+    <div class="card"><span class="num">F8</span><h4>会话恢复</h4><p>刷新不丢：历史输入持久化，重放恢复质询现场</p></div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 6 系统架构 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">ARCHITECTURE</div><h2>系统架构：前端为主体，AI 能力层浏览器端运行</h2></div>
+    <div class="no">系统架构设计<br><b class="pn"></b></div>
+  </div>
+  <div class="arch">
+    <div class="layer"><div class="ln">VIEWS · 路由懒加载（代码分割）</div>
+      <div class="box">
+        <span>Home 首页</span><span>Library 项目库</span><span>Input 输入项目</span>
+        <span>Review 质询三栏</span><span>Report 报告</span>
+      </div></div>
+    <div class="arwd">↑ 组件调用 ↓</div>
+    <div class="layer"><div class="ln">STORES · Pinia 状态管理</div>
+      <div class="box"><span>projects（项目库持久化）</span><span>session（会话 / 草稿 / 重放恢复）</span></div></div>
+    <div class="arwd">↑ 核心逻辑 ↓</div>
+    <div class="layer"><div class="ln">ENGINE + DATA · 质询引擎（纯逻辑，Node 可测）</div>
+      <div class="box"><span>追问链组装</span><span>回答分析</span><span>评分</span><span>风险累计</span><span>报告</span>
+        <span>题库 / 词典 / 演示项目</span><span>赛题知识库（16 块）</span></div></div>
+    <div class="arwd">↑ AI 能力层 ↓</div>
+    <div class="layer ai"><div class="ln">SERVICES · AI 能力（全部浏览器端调用，失败自动降级）</div>
+      <div class="box"><span>llm 流式客户端</span><span>aiReview 锐评增强</span><span>rag 本地检索</span>
+        <span>tools Function Calling</span><span>deepReport 深度评审</span><span>voice 语音</span><span>safety 安全</span></div></div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 7 AI 技术方案总览 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">AI STRATEGY</div><h2>AI 技术方案：三层各司其职，降级不降智</h2></div>
+    <div class="no">AI 技术方案<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c3">
+    <div class="card blue"><span class="num">层 1 · 规则引擎</span><h4>决策骨架</h4>
+      <p>追问链选择（回答完整走 deepQ 再压一层 / 有漏洞走 gapQ 针对缺口）、证据识别、维度评分、风险累计。
+      <b>确定性、可解释、本地零依赖</b>。</p></div>
+    <div class="card cyan"><span class="num">层 2 · LLM</span><h4>内容增强</h4>
+      <p>锐评总结、评委追问建议、深度评审报告。流式输出 + JSON 稳定化；
+      <b>未配置 Key 或调用失败 → 自动降级为纯规则引擎</b>。</p></div>
+    <div class="card green"><span class="num">层 3 · RAG</span><h4>知识注入</h4>
+      <p>官方赛题与评分标准知识库，本地词频检索；锐评前自动注入相关考察点，
+      让评审意见<b>对齐真实评分维度</b>而非泛泛而谈。</p></div>
+  </div>
+  <div class="flow" style="margin-top:18pt">
+    <div class="step"><b>提交回答</b>输入过滤 → 长度校验</div>
+    <div class="arw">→</div>
+    <div class="step"><b>规则判定</b>证据识别 · 问题清单 · 追问决策</div>
+    <div class="arw">→</div>
+    <div class="step"><b>RAG 检索</b>问题+回答 → 知识库 Top-3</div>
+    <div class="arw">→</div>
+    <div class="step"><b>LLM 增强</b>流式锐评 · 追问建议</div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 8 LLM 集成 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">LLM INTEGRATION</div><h2>大模型集成：选型、流式、Prompt 与稳定化</h2></div>
+    <div class="no">AI 技术方案<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c2">
+    <div class="card blue"><span class="num">选型理由</span><h4>OpenAI 兼容抽象层</h4>
+      <p>统一 chat/completions 接口，baseURL 可配，<b>DeepSeek / 智谱 / 通义 / Moonshot 一键切换</b>；
+      评审环境可选用任意国内可用模型，规避网络依赖。</p></div>
+    <div class="card"><span class="num">集成方式</span><h4>SSE 流式输出</h4>
+      <p>深度锐评逐 token 渲染（打字机效果），思考过程可视化；
+      非流式 JSON 模式用于需要结构化解析的场景（response_format）。</p></div>
+    <div class="card"><span class="num">Prompt 设计</span><h4>角色 + 铁律 + 结构</h4>
+      <p>资深评审官角色设定；铁律（不虚构数据 / 只评当前轮 / 输出合法 JSON）；
+      输出结构固定为 summary + asks，解析失败自动降级。</p></div>
+    <div class="card green"><span class="num">稳定可控</span><h4>超时 + 重试 + 降级</h4>
+      <p>45s 超时、网络错误自动重试一次、失败返回 null → 界面回退规则引擎版本，
+      演示现场不会因 API 抖动而中断。</p></div>
+  </div>
+  <div class="quote" style="margin-top:14pt">
+    <p>输出稳定性策略：<b>温度 0.35 + JSON 模式 + 结构校验 + 降级兜底</b>，同一回答多次生成结构一致。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 9 RAG ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">RAG</div><h2>RAG 检索增强：让锐评对齐官方评分标准</h2></div>
+    <div class="no">AI 技术方案<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c2">
+    <div class="card blue"><span class="num">知识库</span><h4>16 块官方赛题知识</h4>
+      <p>命题背景 · 10 个推荐方向 · 评分权重 · AI 深度六项考察点 · 创新性细则 · 前端工程细则 ·
+      提交要求 · 技术文档章节 · 数据红线，全部提炼自官方赛题文档。</p></div>
+    <div class="card"><span class="num">检索策略</span><h4>本地词频检索（零依赖）</h4>
+      <p>中文 2-gram + 英文单词切词、词频打分、关键词预定义加权；
+      <b>完全浏览器端运行</b>：项目内容与知识库不外传，隐私安全。</p></div>
+    <div class="card cyan"><span class="num">注入时机</span><h4>每轮锐评自动注入</h4>
+      <p>以"问题 + 回答 + 判定"为 query 检索 Top-3 片段，注入 Prompt
+      的【赛题与评分标准参考】节，让 LLM 在真实考察点语境下给意见。</p></div>
+    <div class="card green"><span class="num">验证</span><h4>6 组查询全中</h4>
+      <p>评分标准 / 提交要求 / RAG 方向 / 技术栈 / 数据红线 / 文档要求
+      6 类查询全部命中正确知识块（检索单测通过）。</p></div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 10 Agent 工作流 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">AGENT WORKFLOW</div><h2>Agent 工作流：AI 深度评审报告</h2></div>
+    <div class="no">AI 技术方案<br><b class="pn"></b></div>
+  </div>
+  <div class="flow" style="margin-top:10pt">
+    <div class="step"><b>收集材料</b>项目资料 + 全部质询轮次 + 规则引擎汇总</div>
+    <div class="arw">→</div>
+    <div class="step"><b>Agent 决策</b>LLM 自主决定调用哪些工具</div>
+    <div class="arw">→</div>
+    <div class="step"><b>执行工具</b>查知识库 / 按评分表评估</div>
+    <div class="arw">→</div>
+    <div class="step"><b>流式成稿</b>深度评审报告</div>
+  </div>
+  <table style="margin-top:18pt">
+    <tr><th>工具</th><th>说明</th><th>对应评分考察点</th></tr>
+    <tr><td><b style="color:#7cc4ff">search_contest_kb</b></td><td>检索官方赛题知识库（评分权重 / 考察点）</td><td>RAG 技术应用 · 工具集成</td></tr>
+    <tr><td><b style="color:#7cc4ff">score_against_standards</b></td><td>按官方评分维度返回权重与评估依据</td><td>Agent 自主决策 · 输出可控</td></tr>
+  </table>
+  <div class="quote" style="margin-top:14pt">
+    <p>两轮对话模式：第一轮带工具列表让模型<b>自主规划</b>，执行工具后把结果送回，
+    第二轮流式生成对标官方评分标准的报告（总体判断 → 逐维分析 → 三大风险 → 答辩清单）。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 11 多模态 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">MULTIMODAL</div><h2>多模态：语音输入（Web Speech API）</h2></div>
+    <div class="no">AI 技术方案<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c2">
+    <div class="card cyan"><span class="num">实现</span><h4>浏览器原生语音识别</h4>
+      <p>SpeechRecognition / webkitSpeechRecognition，zh-CN 普通话，
+      连续识别 + 中间结果；识别文本自动追加到回答输入框。</p></div>
+    <div class="card"><span class="num">降级</span><h4>能力检测</h4>
+      <p>不支持语音识别的浏览器自动隐藏麦克风按钮，不影响核心质询流程；
+      识别失败提示错误并停止，可重试。</p></div>
+    <div class="card"><span class="num">体验</span><h4>贴合答辩场景</h4>
+      <p>选手可以<b>用嘴演练答辩</b>，语音转文字直接提交，
+      比打字更接近真实答辩节奏，AI 锐评照常给出追问建议。</p></div>
+    <div class="card green"><span class="num">成本</span><h4>零第三方依赖</h4>
+      <p>不引入语音服务 SDK，无额外费用、无数据外传；
+      与"本地优先"的产品原则一致。</p></div>
+  </div>
+  <div class="quote" style="margin-top:14pt">
+    <p>多模态设计取舍：现阶段以<b>语音输入</b>作为多模态入口（浏览器原生、零成本），
+    为后续接入答辩录音分析、上传材料 OCR 等模态预留扩展位。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 12 AI 安全可控 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">SAFETY</div><h2>AI 安全与可控性：能降级、能解释、不越界</h2></div>
+    <div class="no">AI 技术方案<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c4">
+    <div class="card"><span class="num">1</span><h4>输入过滤</h4><p>暴力 / 违法 / 攻击性内容本地拦截；超长输入（>6000 字）限制</p></div>
+    <div class="card"><span class="num">2</span><h4>降级兜底</h4><p>LLM 未配置 / 超时 / 失败 → 自动回退规则引擎，功能不中断</p></div>
+    <div class="card"><span class="num">3</span><h4>可解释性</h4><p>锐评逐条给出 为什么是问题 / 评委怎么追问 / 建议补什么</p></div>
+    <div class="card green"><span class="num">4</span><h4>数据红线</h4><p>不虚构数据；缺失标注"待验证"；报告声明非官方评审</p></div>
+  </div>
+  <div class="chain">
+    <div class="cnode"><div class="pin">✓</div><div class="body"><b>密钥不入库</b>：API Key 走环境变量（.env 已 gitignore），提交仓库零泄露。</div></div>
+    <div class="cnode"><div class="pin">✓</div><div class="body"><b>本地优先</b>：项目资料、知识库、检索全部浏览器端完成，无服务器中间层。</div></div>
+    <div class="cnode"><div class="pin">✓</div><div class="body"><b>模拟评审声明</b>：界面、报告、PDF 均标注"不代表官方评审 / 官方评分"。</div></div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 13 质询引擎 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">ENGINE</div><h2>质询引擎：不是随机提问，是追问链</h2></div>
+    <div class="no">核心功能实现<br><b class="pn"></b></div>
+  </div>
+  <div class="chain">
+    <div class="cnode"><div class="pin">Q</div><div class="body"><b>资料驱动出题</b>：示例项目 11 道主线题按
+      <i>创新性 → 技术实现 → AI 能力 → 视觉专项 → 数据验证 → 异常鲁棒 → 通信 → 实用价值</i> 推进；
+      自定义项目用通用链，检测到视觉关键词自动插入 4 道视觉专项题。</div></div>
+    <div class="cnode"><div class="pin">A</div><div class="body"><b>回答分析</b>：8 条规则 + 题目专属规则 ——
+      信息量不足 / 关键证据缺失 / 隐含问题被绕开 / 参数缺失 / 有结论无量化 / 含糊表述 / 绝对化表述 / 缺失效处理。</div></div>
+    <div class="cnode"><div class="pin">↳</div><div class="body"><b>追问决策</b>：回答完整（证据覆盖 ≥ 2/3 且无高优问题）→ <b>deepQ 再压一层</b>；
+      有漏洞 → <b>gapQ 针对缺口追问</b>；每题最多 1 轮追问后自动推进主题。</div></div>
+    <div class="cnode"><div class="pin">R</div><div class="body"><b>风险累计与评分</b>：问题按 6 类风险聚合（证据不足 / 逻辑漏洞 / 参数缺失 / 技术风险 / 数据风险 / 发现的问题），
+      维度分按题目映射实时增减。</div></div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 14 质询三栏实现 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">UI</div><h2>质询现场：三栏布局，信息实时联动</h2></div>
+    <div class="no">核心功能实现<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c3">
+    <div class="card blue"><span class="num">左栏</span><h4>项目信息 + 进度</h4>
+      <p>项目资料逐项展示；质询进度（主线 / 轮次 / 发现问题）；追问链可视化（✓ 已完成 / ▶ 当前）。</p></div>
+    <div class="card"><span class="num">中栏</span><h4>当前问题 + 回答 + 锐评</h4>
+      <p>CURRENT QUESTION 卡片（评委关注点 + 完整回答应包含）；
+      手动 / 模拟 / 语音三种回答方式；AI 锐评流式渲染；往轮记录可折叠回看。</p></div>
+    <div class="card orange"><span class="num">右栏</span><h4>实时风险面板</h4>
+      <p>风险按优先级实时累计（高 / 中 / 低 + 出现次数）；
+      模拟评审维度得分条随回答即时变化。</p></div>
+  </div>
+  <div class="quote" style="margin-top:16pt">
+    <p>交互细节：<b>模拟回答连续点击</b>即可展示追问链全流程（演示友好）；
+    任意时刻"结束并出报告"；<b>会话持久化</b>刷新不丢（历史输入重放恢复）。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 15 报告与导出 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">REPORT</div><h2>报告体系：规则报告 + AI 深度报告，均可导出 PDF</h2></div>
+    <div class="no">核心功能实现<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c2">
+    <div class="card"><span class="num">规则引擎报告</span><h4>确定性输出</h4>
+      <p>结论 → 模拟评审维度（非官方评分）→ 风险总结（按优先级）→ 改进建议（必补 / 建议 / 加分）→
+      建议补充材料 → 质询回合一览 → 视觉专项清单。</p></div>
+    <div class="card cyan"><span class="num">AI 深度报告</span><h4>对标评分标准</h4>
+      <p>Agent 调用工具核对官方考察点后生成：总体判断 → 逐维分析（当前状态 / 差距 / 怎么补）→
+      三大最紧迫风险 → 答辩准备清单。</p></div>
+  </div>
+  <div class="flow" style="margin-top:16pt">
+    <div class="step"><b>打印 / 导出 PDF</b>浏览器打印对话框另存为 PDF</div>
+    <div class="arw">→</div>
+    <div class="step"><b>A4 浅色版式</b>打印样式独立重写：白底深字、表格卡片不跨页</div>
+    <div class="arw">→</div>
+    <div class="step"><b>页眉声明</b>项目名 + 场景 + 免责声明自动带入</div>
+  </div>
+  <div class="quote" style="margin-top:14pt">
+    <p>演示场景：模拟回答 ×3 → 结束出报告 → 导出 PDF，<b>3 分钟内跑完一次完整闭环</b>。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 16 测试与验证 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">TESTING</div><h2>测试与验证：不是"应该能跑"，是跑过并量化</h2></div>
+    <div class="no">测试与部署<br><b class="pn"></b></div>
+  </div>
+  <table>
+    <tr><th>测试</th><th>命令</th><th>结果</th></tr>
+    <tr><td><b style="color:#eaf3ff">质询引擎单测</b></td><td class="mono">npm run test:engine</td>
+      <td>11 主线 + 11 追问共 22 轮完整跑通，风险 / 维度分 / 报告 / 校验全过</td></tr>
+    <tr><td><b style="color:#eaf3ff">RAG 检索单测</b></td><td class="mono">npm run test:rag</td>
+      <td>6 组查询全部命中正确知识块</td></tr>
+    <tr><td><b style="color:#eaf3ff">端到端点击流</b></td><td class="mono">npm run test:e2e</td>
+      <td>无头 Edge 真实点击：首页 → 快速体验 → 模拟回答×3 → 报告 → 返回追加，6 项断言全过</td></tr>
+    <tr><td><b style="color:#eaf3ff">类型与规范</b></td><td class="mono">npm run build / lint</td>
+      <td>vue-tsc 严格模式 0 错误；ESLint 0 错误；Prettier 统一</td></tr>
+  </table>
+  <div class="kpi" style="margin-top:16pt">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11pt">
+      <div><div class="v">22 轮</div><div class="l">引擎完整链</div></div>
+      <div><div class="v">6 / 6</div><div class="l">E2E 断言</div></div>
+      <div><div class="v">0</div><div class="l">lint / 类型错误</div></div>
+    </div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 17 性能与工程化 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">ENGINEERING</div><h2>前端工程化：严格类型 + 路由懒加载 + 代码分割</h2></div>
+    <div class="no">测试与部署<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c2">
+    <div class="card"><span class="num">TypeScript 严格</span><h4>类型即文档</h4>
+      <p>noUnusedLocals / noUnusedParameters / erasableSyntaxOnly 全开，
+      全量类型定义（Question / Session / Critique / Report…），引擎层 Node 可直接运行测试。</p></div>
+    <div class="card"><span class="num">性能优化</span><h4>懒加载 + 分包</h4>
+      <p>路由级动态 import（5 视图独立 chunk）；vue 全家桶 vendor 分包；
+      构建产物 gzip：vendor 34 KB + 主包 42 KB + 视图 1.5–6 KB。</p></div>
+    <div class="card"><span class="num">规范</span><h4>ESLint + Prettier</h4>
+      <p>vue-ts 官方 ESLint 配置 + Prettier 统一格式，npm run lint / format 一键执行。</p></div>
+    <div class="card green"><span class="num">工程结构</span><h4>分层清晰</h4>
+      <p>engine（纯逻辑）/ data / services / stores / views / components 六层分离，
+      引擎与 UI 完全解耦，可独立测试、可复用。</p></div>
+  </div>
+  <div class="quote" style="margin-top:14pt">
+    <p>架构收益：<b>质询引擎不依赖 DOM、可在 Node 直接跑</b>——单测、文档、未来迁移都不受界面层约束。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 18 创新点 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">INNOVATION</div><h2>创新点：技术 × 应用 × 交互</h2></div>
+    <div class="no">创新点说明<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c3">
+    <div class="card blue"><span class="num">技术 01</span><h4>规则引擎 × LLM 混合评审</h4>
+      <p>决策与生成分离：追问链、评分、风险由确定性规则引擎负责，
+      LLM 只做内容增强——<b>可解释、防幻觉、可降级</b>。</p></div>
+    <div class="card blue"><span class="num">技术 02</span><h4>本地 RAG 对齐官方标准</h4>
+      <p>赛题评分标准做知识库、浏览器端词频检索、每轮锐评自动注入，
+      <b>零依赖实现检索增强生成</b>，评审意见落到官方考察点。</p></div>
+    <div class="card blue"><span class="num">技术 03</span><h4>Agent 自主工具调用</h4>
+      <p>深度评审报告由 LLM 自主决定调用"查知识库 / 评分表评估"，
+      Function Calling 两轮对话，真实 Agent 工作流。</p></div>
+    <div class="card orange"><span class="num">应用 01</span><h4>答辩前压力测试</h4>
+      <p>把"没人帮挑毛病"变成"AI 连续压测"，
+      输出<b>逐条可执行的改进清单</b>，直接进答辩准备。</p></div>
+    <div class="card orange"><span class="num">应用 02</span><h4>数据红线产品化</h4>
+      <p>不虚构数据写入产品铁律：缺失即标注"待验证"，
+      引导选手用"目标 / 计划测试"的正确答法。</p></div>
+    <div class="card orange"><span class="num">应用 03</span><h4>追问链交互</h4>
+      <p>回答完整就深入一层、有漏洞就针对缺口——
+      <b>不是随机提问</b>，模拟真实评委的追打节奏。</p></div>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<!-- ============ 19 总结与展望 ============ -->
+<section class="slide">
+  <div class="grid-bg"></div>
+  <div class="hd">
+    <div><div class="lb">SUMMARY</div><h2>总结与展望</h2></div>
+    <div class="no">总结与展望<br><b class="pn"></b></div>
+  </div>
+  <div class="cards c2">
+    <div class="card green"><span class="num">总结</span><h4>一个可验证的 AI Native 应用</h4>
+      <p>从真实痛点出发，用 Vue 3 + TS 构建完整前端工程，
+      以"规则引擎 + LLM + RAG"三层架构实现 AI 深度集成，
+      配齐测试、性能与安全工程化，所有结论可复现。</p></div>
+    <div class="card"><span class="num">展望 1</span><h4>多模态扩展</h4>
+      <p>答辩录音 / 录屏分析（转写 + 追问）、上传材料 OCR 提取证据，
+      从语音输入扩展为"答辩全流程 AI 教练"。</p></div>
+    <div class="card"><span class="num">展望 2</span><h4>知识库可插拔</h4>
+      <p>赛题知识库按 JSON 配置化，可切换不同比赛 / 评审标准，
+      从一个比赛工具变成通用"答辩教练"平台。</p></div>
+    <div class="card"><span class="num">展望 3</span><h4>端侧推理</h4>
+      <p>接入 Transformers.js / WebGPU 做本地小模型兜底，
+      进一步兑现"端云协同"的技术路线。</p></div>
+  </div>
+  <div class="quote" style="margin-top:14pt">
+    <p>社会价值：降低大学生创新创业项目的"答辩信息差"——
+    让每一支队伍在上场前，都有一位<b>不辞辛劳、不讲情面、不虚构数据</b>的 AI 刁钻评委。</p>
+  </div>
+  <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
+</section>
+
+<script>
+/* 页码自动填充 */
+(function () {
+  var slides = document.querySelectorAll('.slide');
+  document.querySelectorAll('.ptot').forEach(function (el) { el.textContent = slides.length; });
+  slides.forEach(function (s, i) {
+    s.querySelectorAll('.pn').forEach(function (el) { el.textContent = (i + 1); });
+  });
+})();
+</script>
+</body>
+</html>
