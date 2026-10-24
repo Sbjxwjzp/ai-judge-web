@@ -14,8 +14,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         /* 代码分割：vue 全家桶独立 vendor，视图按路由懒加载 */
-        manualChunks: {
-          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+        manualChunks(id: string) {
+          if (
+            id.includes('node_modules/vue') ||
+            id.includes('node_modules/vue-router') ||
+            id.includes('node_modules/pinia')
+          ) {
+            return 'vue-vendor'
+          }
         },
       },
     },
