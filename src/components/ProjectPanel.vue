@@ -79,7 +79,8 @@ function qcode(i: number): string {
           <div class="nbody">
             <div class="ntext">{{ r.q.topic }}</div>
             <div class="nsub">
-              {{ r.q.isFollowUp ? '追问 · ' : '' }}{{ r.critique.verdict }} · {{ r.critique.issues.length }} 个待处理点
+              {{ r.q.isFollowUp ? '追问 · ' : '' }}{{ r.critique.verdict }} ·
+              {{ r.critique.issues.length }} 个待处理点
             </div>
           </div>
         </div>

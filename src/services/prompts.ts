@@ -48,9 +48,7 @@ export function buildUserPrompt(input: PromptInput): string {
     ? critique.issues.map((i, idx) => `${idx + 1}. [${i.name}] ${i.title}：${i.detail}`)
     : ['（规则引擎本轮未发现明显缺口）']
 
-  const kb = input.kbContext
-    ? ['', input.kbContext, '']
-    : []
+  const kb = input.kbContext ? ['', input.kbContext, ''] : []
 
   return [
     '【项目资料】',

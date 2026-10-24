@@ -50,7 +50,9 @@ export async function enhanceCritique(
     const data = extractJson(text) as { summary?: unknown; asks?: unknown }
     const summary = typeof data.summary === 'string' ? data.summary.trim() : ''
     const asks = Array.isArray(data.asks)
-      ? data.asks.filter((a): a is string => typeof a === 'string' && a.trim().length > 0).slice(0, 3)
+      ? data.asks
+          .filter((a): a is string => typeof a === 'string' && a.trim().length > 0)
+          .slice(0, 3)
       : []
     if (!summary && !asks.length) return null
     return { summary, asks }

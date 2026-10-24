@@ -32,8 +32,14 @@ function qcode(i: number): string {
       <div class="box">
         <div class="k">完整回答应包含</div>
         <ul>
-          <li v-for="(e, i) in (question.evidence && question.evidence.length ? question.evidence : ['给出一个具体做法，并说明它的边界'])"
-              :key="i">{{ e }}</li>
+          <li
+            v-for="(e, i) in question.evidence && question.evidence.length
+              ? question.evidence
+              : ['给出一个具体做法，并说明它的边界']"
+            :key="i"
+          >
+            {{ e }}
+          </li>
         </ul>
       </div>
     </div>

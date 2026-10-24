@@ -63,10 +63,17 @@ function remove(p: Project) {
             </div>
             <div class="desc">{{ projectsStore.sample.brief }}</div>
             <div class="meta">
-              <span v-for="t in (projectsStore.sample.tags || []).slice(0, 5)" :key="t" class="tag">{{ t }}</span>
+              <span
+                v-for="t in (projectsStore.sample.tags || []).slice(0, 5)"
+                :key="t"
+                class="tag"
+                >{{ t }}</span
+              >
             </div>
             <div class="btn-row">
-              <button class="btn primary sm" @click="start(projectsStore.sample)">开始 AI 质询</button>
+              <button class="btn primary sm" @click="start(projectsStore.sample)">
+                开始 AI 质询
+              </button>
             </div>
           </div>
         </div>
@@ -92,7 +99,10 @@ function remove(p: Project) {
         </div>
         <div v-else class="card">
           <h3>还没有你的项目</h3>
-          <p>点击「输入我的项目」，填入项目名称、简介、技术方案与目前进展。填得越具体，AI 质询越有针对性。</p>
+          <p>
+            点击「输入我的项目」，填入项目名称、简介、技术方案与目前进展。填得越具体，AI
+            质询越有针对性。
+          </p>
           <button class="btn primary" @click="go('input')">现在输入</button>
         </div>
       </template>

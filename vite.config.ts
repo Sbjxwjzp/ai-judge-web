@@ -10,4 +10,14 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        /* 代码分割：vue 全家桶独立 vendor，视图按路由懒加载 */
+        manualChunks: {
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+        },
+      },
+    },
+  },
 })

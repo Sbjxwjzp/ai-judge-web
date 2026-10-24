@@ -67,8 +67,6 @@ export function formatKBContext(hits: SearchHit[]): string {
   if (!hits.length) return ''
   return (
     '【赛题与评分标准参考（检索自官方赛题知识库）】\n' +
-    hits
-      .map((h, i) => `${i + 1}. [${h.chunk.title}] ${h.chunk.content}`)
-      .join('\n\n')
+    hits.map((h, i) => `${i + 1}. [${h.chunk.title}] ${h.chunk.content}`).join('\n\n')
   )
 }

@@ -24,10 +24,13 @@ function quickStart() {
         <h2>AI刁钻评委</h2>
         <p class="oneliner">让你的项目先接受一次 AI 压力测试，再去面对真正的评委。</p>
         <p class="sub">
-          面向大学生创新创业项目的 AI 智能评审与压力测试智能体。通过连续质询，提前发现项目中的技术漏洞、数据漏洞、逻辑漏洞、创新性不足、商业化与展示问题。
+          面向大学生创新创业项目的 AI
+          智能评审与压力测试智能体。通过连续质询，提前发现项目中的技术漏洞、数据漏洞、逻辑漏洞、创新性不足、商业化与展示问题。
         </p>
         <div class="hero-actions">
-          <button class="btn primary" @click="quickStart">快速体验（车载平衡滚球运动控制系统）</button>
+          <button class="btn primary" @click="quickStart">
+            快速体验（车载平衡滚球运动控制系统）
+          </button>
           <button class="btn ghost" @click="go('input')">输入我的项目</button>
           <button class="btn gray" @click="go('library')">项目库</button>
         </div>
@@ -41,21 +44,25 @@ function quickStart() {
           <div class="step-num">STEP 01 · 项目输入</div>
           <h3>选择示例或输入自己的项目</h3>
           <p>
-            内置示例项目「车载平衡滚球运动控制系统」（视觉方案：Sipeed MaixCAM Pro）；你也可以直接填入自己的项目名称、简介、技术方案、进展与已有数据。
+            内置示例项目「车载平衡滚球运动控制系统」（视觉方案：Sipeed MaixCAM
+            Pro）；你也可以直接填入自己的项目名称、简介、技术方案、进展与已有数据。
           </p>
         </div>
         <div class="card glow">
           <div class="step-num">STEP 02 · AI 连续质询</div>
           <h3>不是随机提问，而是追问链</h3>
           <p>
-            AI 依据项目资料动态出题：回答完整就继续往下压一层，回答有漏洞就针对漏洞追问，形成"基础问题 → 技术追问 → 异常场景 → 数据验证 → 改进建议"的链条。
+            AI
+            依据项目资料动态出题：回答完整就继续往下压一层，回答有漏洞就针对漏洞追问，形成"基础问题
+            → 技术追问 → 异常场景 → 数据验证 → 改进建议"的链条。
           </p>
         </div>
         <div class="card glow">
           <div class="step-num">STEP 03 · 锐评与风险总结</div>
           <h3>给出为什么、会追问什么、该补什么</h3>
           <p>
-            每轮给出 AI 锐评：发现的问题、证据不足、逻辑漏洞、关键参数缺失、技术风险、数据风险；最后汇总为风险清单、模拟评审维度与改进建议。
+            每轮给出 AI
+            锐评：发现的问题、证据不足、逻辑漏洞、关键参数缺失、技术风险、数据风险；最后汇总为风险清单、模拟评审维度与改进建议。
           </p>
         </div>
       </div>
@@ -78,7 +85,15 @@ function quickStart() {
         <div class="card">
           <h3>关于数据的红线</h3>
           <p>AI刁钻评委不会替你虚构数据：</p>
-          <ul style="color: var(--txt-2); font-size: 13.6px; line-height: 1.9; padding-left: 20px; margin: 6px 0">
+          <ul
+            style="
+              color: var(--txt-2);
+              font-size: 13.6px;
+              line-height: 1.9;
+              padding-left: 20px;
+              margin: 6px 0;
+            "
+          >
             <li>不虚构实验结果、样本量、识别率、误差、用户量、合作方</li>
             <li>项目资料里没有的量化结果，AI 只会指出来并要求你补充</li>
             <li>缺少数据时，正确答法是说"目标 / 设计指标 / 计划测试 / 需要验证"</li>

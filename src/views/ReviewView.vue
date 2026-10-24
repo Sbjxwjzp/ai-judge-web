@@ -87,7 +87,9 @@ function go(view: string) {
                 <span class="mono">Q_{{ r.no < 10 ? '0' + r.no : r.no }}</span>
                 <b>{{ r.q.topic }}</b>
                 <span v-if="r.q.isFollowUp" class="tag orange">追问</span>
-                <span class="tag" :class="r.critique.criticalCount ? 'red' : 'green'">{{ r.critique.verdict }}</span>
+                <span class="tag" :class="r.critique.criticalCount ? 'red' : 'green'">{{
+                  r.critique.verdict
+                }}</span>
                 <span class="dim">{{ r.critique.issues.length }} 个待处理点</span>
               </summary>
               <CritiqueCard :round="r" />
@@ -95,7 +97,8 @@ function go(view: string) {
           </div>
 
           <div class="note blue">
-            演示提示：连续点几次「模拟回答」，就能看到 AI 如何连续追问；任意时刻点右上角「结束并出报告」即可查看风险总结与改进建议。
+            演示提示：连续点几次「模拟回答」，就能看到 AI
+            如何连续追问；任意时刻点右上角「结束并出报告」即可查看风险总结与改进建议。
           </div>
         </div>
 

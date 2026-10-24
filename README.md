@@ -1,5 +1,137 @@
-# Vue 3 + TypeScript + Vite
+# AI刁钻评委 · AI Picky Judge
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+> 面向大学生创新创业项目的 **AI 智能评审与压力测试智能体**
+> 一句话：**让你的项目先接受一次 AI 压力测试，再去面对真正的评委。**
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+参赛作品：**全国高校 AI Web 开发挑战赛**（AI 驱动的 Web 应用创新挑战）
+
+默认演示项目：**车载平衡滚球运动控制系统**（视觉方案：Sipeed MaixCAM Pro）
+
+---
+
+## 一、项目介绍
+
+AI刁钻评委是一个 **AI Native Web 应用**：选手把自己的创新创业项目资料（名称、简介、技术方案、进展、已有数据）输入进来，AI 便以"资深评委"的身份发起**连续质询与压力测试**——回答完整就往更深一层追问，回答有漏洞就针对缺口追问，并逐轮给出**可执行的问题清单**（证据不足 / 逻辑漏洞 / 参数缺失 / 技术风险 / 数据风险），最后输出**对标官方评分标准的改进路线**。
+
+核心价值：把"答辩前没人帮你挑毛病"变成"先用 AI 压测一遍再上场"。
+
+### 功能特性
+
+| 功能 | 说明 |
+|---|---|
+| 项目库 | 示例项目 + 用户自定义项目（浏览器本地持久化，不上传） |
+| AI 连续质询 | 11 条主线 + 追问链（deepQ/gapQ 决策），视觉类项目自动追加专项题 |
+| AI 锐评 | 规则引擎判定骨架 + LLM 深度锐评（流式打字机效果） |
+| 实时风险面板 | 风险按优先级累计，评审维度得分条实时更新 |
+| 模拟评审报告 | 风险总结 + 改进建议 + 材料清单 + 质询回合一览，可导出 PDF |
+| AI 深度评审报告 | Agent 自主调用工具（查赛题知识库 / 按官方评分标准评估）生成深度报告 |
+| 语音输入 | Web Speech API，普通话语音转文字填入回答 |
+
+## 二、技术架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    前端（Vue 3 + TypeScript + Vite）           │
+│                                                             │
+│  Views (Home / Library / Input / Review / Report)           │
+│     │ 路由懒加载（代码分割）                                   │
+│  Stores (Pinia)  ──  projects.ts  custom 项目持久化           │
+│                   └─  session.ts   会话/草稿/持久化重放        │
+│     │                                                        │
+│  ┌──┴────────────────────────────────────────────┐           │
+│  │ 质询引擎 engine/（纯逻辑，Node 可测）             │          │
+│  │  - 追问链组装 / 回答分析 / 评分 / 风险累计 / 报告   │          │
+│  │ 数据层 data/（题库 · 词典 · 演示项目）             │          │
+│  └──┬────────────────────────────────────────────┘           │
+│     │                                                        │
+│  Services（AI 能力层，全部浏览器端调用）                       │
+│  ├─ llm.ts        OpenAI 兼容流式客户端（可配 DeepSeek/智谱/通义）│
+│  ├─ aiReview.ts   规则判定 + LLM 锐评增强（失败自动降级）        │
+│  ├─ rag.ts        本地 RAG：赛题/评分标准知识库检索              │
+│  ├─ tools.ts      Function Calling：查知识库 / 评分表评估        │
+│  ├─ deepReport.ts Agent 深度评审报告（工具调用 + 流式生成）       │
+│  ├─ voice.ts      Web Speech API 语音输入                      │
+│  └─ safety.ts     输入内容过滤 / 超时重试 / 降级兜底             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**AI 能力设计（三层各司其职）**：
+
+- **规则引擎层**：负责决策骨架——追问链选择（回答完整走 deepQ 再压一层，有漏洞走 gapQ 针对缺口）、证据识别、维度评分、风险累计。确定性、可解释、本地零依赖。
+- **LLM 生成层**：负责内容增强——锐评总结、评委追问建议、深度评审报告。流式输出，失败自动降级回纯规则引擎。
+- **RAG 知识层**：官方赛题与评分标准知识库（16 块），检索增强让评审意见对齐真实评分维度。
+
+## 三、安装运行指南
+
+环境要求：Node.js ≥ 20（开发机使用 Node 24 验证）。
+
+```bash
+# 1. 安装依赖
+npm install
+
+# 2. 配置环境变量（可选，不配置则用纯规则引擎）
+cp .env.example .env
+# 编辑 .env：填入 VITE_LLM_API_KEY 与对应 BASE_URL/MODEL
+
+# 3. 启动开发服务器
+npm run dev
+# 打开 http://localhost:5173
+
+# 4. 生产构建 / 预览
+npm run build
+npm run preview
+```
+
+### 环境变量模板（.env.example）
+
+| 变量 | 说明 | 示例 |
+|---|---|---|
+| `VITE_LLM_ENABLED` | 是否启用 LLM 增强 | `true` |
+| `VITE_LLM_API_KEY` | API 密钥（绝不入仓库） | `sk-xxxx` |
+| `VITE_LLM_BASE_URL` | OpenAI 兼容接口地址 | `https://api.deepseek.com/v1` |
+| `VITE_LLM_MODEL` | 模型名 | `deepseek-chat` |
+
+支持任意 OpenAI 兼容接口：DeepSeek / 智谱 GLM / 通义千问 / Moonshot / OpenAI。
+
+### 测试
+
+```bash
+npm run test:engine   # 质询引擎单测：11 主线 + 11 追问完整链
+npm run test:rag      # RAG 检索召回单测（6 组查询）
+npm run test:e2e      # 端到端点击流回归（需先 npm run dev）
+npm run lint          # ESLint（TS 严格 + Vue 规范）
+```
+
+## 四、目录结构
+
+```
+src/
+├── engine/      质询引擎（纯逻辑：追问链/分析/评分/报告）
+├── data/        数据层：core 常量 · 演示题库 · 通用题库 · 追问库 · RAG 知识库
+├── types/       共享 TypeScript 类型
+├── services/    AI 能力层：llm · aiReview · rag · tools · deepReport · voice · safety
+├── stores/      Pinia：projects（项目库）/ session（会话）
+├── views/       五个路由视图
+├── components/  顶栏 · 问题卡 · 锐评卡 · 风险面板 · 项目面板
+└── router/      路由（懒加载）
+scripts/         引擎单测 · RAG 单测 · E2E 冒烟
+```
+
+## 五、数据红线（产品内置）
+
+- 不虚构实验结果、样本量、识别率、误差、用户量、合作方。
+- 项目资料没有的量化结果，AI 只会指出"缺失/待验证"并要求补充。
+- 缺少数据时，正确答法是"目标 / 设计指标 / 计划测试 / 需要验证"。
+- 模拟回答逐条标注"系统生成，非真实答辩内容"；报告声明"非官方评审"。
+
+## 六、团队信息
+
+> **待填写**：团队名称 / 学校 / 成员（1-3 人）/ 指导教师（≤2 人）/ 组别
+
+| 项目 | 内容 |
+|---|---|
+| 团队名称 | （填写） |
+| 学校 | （填写） |
+| 成员 | （填写） |
+| 指导教师 | （填写） |
+| 参赛组别 | （填写：A / B / C） |

@@ -22,12 +22,19 @@ for (const [q, expect] of cases) {
   const ids = hits.map((h) => h.chunk.id)
   const ok = expect.some((e) => ids.includes(e))
   console.log(
-    (ok ? '  ✅ ' : '  ❌ ') + '「' + q + '」 → ' + ids.join(', ') + (ok ? '' : '  期望含 ' + expect.join(','))
+    (ok ? '  ✅ ' : '  ❌ ') +
+      '「' +
+      q +
+      '」 → ' +
+      ids.join(', ') +
+      (ok ? '' : '  期望含 ' + expect.join(','))
   )
   if (ok) pass++
 }
 
-console.log('\n' + (pass === cases.length ? '✅ RAG 检索全部通过' : `❌ ${cases.length - pass} 项未命中`))
+console.log(
+  '\n' + (pass === cases.length ? '✅ RAG 检索全部通过' : `❌ ${cases.length - pass} 项未命中`)
+)
 
 /* 展示一段格式化上下文 */
 console.log('\n== 示例上下文注入 ==')

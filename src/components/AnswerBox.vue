@@ -49,7 +49,12 @@ function focusInput() {
     <div class="btn-row" style="margin-bottom: 12px">
       <button class="btn primary" @click="focusInput">手动回答</button>
       <button class="btn warn" @click="submitMock">模拟回答（系统生成 · 非真实答辩内容）</button>
-      <button v-if="voice.supported" class="btn ghost" :class="{ on: voice.listening.value }" @click="toggleVoice">
+      <button
+        v-if="voice.supported"
+        class="btn ghost"
+        :class="{ on: voice.listening.value }"
+        @click="toggleVoice"
+      >
         {{ voice.listening.value ? '⏹ 停止录音' : '🎤 语音输入' }}
       </button>
       <span class="dim" style="font-size: 12.6px">手动回答用于正式体验，模拟回答用于快速演示</span>

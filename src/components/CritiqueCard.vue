@@ -45,9 +45,13 @@ const verdictTag = computed(() => {
     </div>
 
     <div class="issue">
-      <div class="ibody" style="color: #bdcfe3">本轮问题（{{ round.q.topic }}）：{{ round.q.text }}</div>
+      <div class="ibody" style="color: #bdcfe3">
+        本轮问题（{{ round.q.topic }}）：{{ round.q.text }}
+      </div>
       <div class="iblock">
-        <div class="k">你的回答{{ round.isMock ? '（模拟回答 · 系统生成，非真实答辩内容）' : '' }}</div>
+        <div class="k">
+          你的回答{{ round.isMock ? '（模拟回答 · 系统生成，非真实答辩内容）' : '' }}
+        </div>
         <div class="ibody">{{ round.answer }}</div>
       </div>
     </div>

@@ -43,7 +43,9 @@ function buildDeepReportUser(session: Session): string {
   })
 
   const dims = session.dims
-  const dimLines = Object.entries(dims).map(([name, d]) => `${name}: ${d.score}分（${d.notes.join('；') || '未触及'}）`)
+  const dimLines = Object.entries(dims).map(
+    ([name, d]) => `${name}: ${d.score}分（${d.notes.join('；') || '未触及'}）`
+  )
 
   return [
     '【项目资料】',
@@ -58,7 +60,11 @@ function buildDeepReportUser(session: Session): string {
     '',
     '【规则引擎汇总】',
     '维度分：' + dimLines.join(' | '),
-    '风险计数：' + session.risks.length + ' 个（高优先级 ' + session.risks.filter((r) => r.sev === 'h').length + '）',
+    '风险计数：' +
+      session.risks.length +
+      ' 个（高优先级 ' +
+      session.risks.filter((r) => r.sev === 'h').length +
+      '）',
     '',
     '【官方评分权重参考】' + SCORE_BRIEF,
     '',

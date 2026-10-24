@@ -65,10 +65,7 @@ interface RequestOptions extends LLMOptions {
   tools?: ToolDef[]
 }
 
-async function request(
-  messages: ChatMessage[],
-  opts: RequestOptions
-): Promise<Response> {
+async function request(messages: ChatMessage[], opts: RequestOptions): Promise<Response> {
   if (!llmConfig.enabled) throw new LLMError('LLM 未启用（缺少 VITE_LLM_API_KEY）')
   const body: Record<string, unknown> = {
     model: llmConfig.model,
@@ -179,7 +176,10 @@ export async function chat(messages: ChatMessage[], opts: LLMOptions = {}): Prom
 
 /** 从 LLM 输出中稳健提取 JSON（容忍 markdown 代码块包裹） */
 export function extractJson(text: string): unknown {
-  const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim()
+  const cleaned = text
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .trim()
   const start = cleaned.indexOf('{')
   const end = cleaned.lastIndexOf('}')
   if (start < 0 || end <= start) throw new LLMError('LLM 输出不是合法 JSON')

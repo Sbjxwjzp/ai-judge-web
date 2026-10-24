@@ -17,7 +17,10 @@ export const CONTEST_TOOLS: ToolDef[] = [
       parameters: {
         type: 'object',
         properties: {
-          query: { type: 'string', description: '检索关键词，例如"AI技术深度 评分标准"或"RAG 考察点"' }
+          query: {
+            type: 'string',
+            description: '检索关键词，例如"AI技术深度 评分标准"或"RAG 考察点"'
+          }
         },
         required: ['query']
       }
@@ -50,7 +53,10 @@ async function execSearchKb(args: Record<string, unknown>): Promise<string> {
 async function execScore(args: Record<string, unknown>): Promise<string> {
   const focus = String(args.focus || '整体').trim()
   /* 评分标准文本从知识库检索，保证与官方一致 */
-  const hits = searchKB('评分标准 权重 AI技术深度 35% 创新性 25% 前端工程 实用性 用户体验 社会价值 商业潜力', 3)
+  const hits = searchKB(
+    '评分标准 权重 AI技术深度 35% 创新性 25% 前端工程 实用性 用户体验 社会价值 商业潜力',
+    3
+  )
   const std = formatKBContext(hits)
   return (
     '官方评分维度与权重如下（请严格按此评估）：\n' +
@@ -61,10 +67,7 @@ async function execScore(args: Record<string, unknown>): Promise<string> {
   )
 }
 
-export const TOOL_EXECUTOR: Record<
-  string,
-  (args: Record<string, unknown>) => Promise<string>
-> = {
+export const TOOL_EXECUTOR: Record<string, (args: Record<string, unknown>) => Promise<string>> = {
   search_contest_kb: execSearchKb,
   score_against_standards: execScore
 }

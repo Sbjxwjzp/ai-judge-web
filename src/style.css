@@ -22,8 +22,8 @@
   --violet: #a371f7;
   --mono: 'Cascadia Mono', 'Cascadia Code', Consolas, 'SF Mono', Menlo, monospace;
   --sans:
-    'Microsoft YaHei UI', 'Microsoft YaHei', 'PingFang SC', 'HarmonyOS Sans SC',
-    system-ui, -apple-system, 'Segoe UI', sans-serif;
+    'Microsoft YaHei UI', 'Microsoft YaHei', 'PingFang SC', 'HarmonyOS Sans SC', system-ui,
+    -apple-system, 'Segoe UI', sans-serif;
   --r: 12px;
 }
 * {
@@ -135,7 +135,9 @@ button {
   font-family: var(--mono);
   font-weight: 700;
   font-size: 15px;
-  box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.45), 0 8px 22px -10px rgba(59, 130, 246, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(88, 166, 255, 0.45),
+    0 8px 22px -10px rgba(59, 130, 246, 0.9);
   letter-spacing: 0.5px;
 }
 .brand h1 {
@@ -239,7 +241,9 @@ button {
   color: var(--txt-2);
 }
 .card.glow {
-  box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.1), 0 22px 60px -34px rgba(59, 130, 246, 0.7);
+  box-shadow:
+    0 0 0 1px rgba(88, 166, 255, 0.1),
+    0 22px 60px -34px rgba(59, 130, 246, 0.7);
 }
 .sec-title {
   display: flex;

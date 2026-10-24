@@ -17,7 +17,15 @@ import type {
   ProgressInfo,
   Report
 } from '@/types/engine'
-import { LEX, REVIEW_DIMS, RISK_KINDS, DIM_META, ICAN_SCENE, DISCLAIMER, SAMPLE_PROJECT } from '@/data/core'
+import {
+  LEX,
+  REVIEW_DIMS,
+  RISK_KINDS,
+  DIM_META,
+  ICAN_SCENE,
+  DISCLAIMER,
+  SAMPLE_PROJECT
+} from '@/data/core'
 import { DEMO_CHAIN_PART1 } from '@/data/demo1'
 import { DEMO_CHAIN_PART2 } from '@/data/demo2'
 import { GENERIC_CHAIN, GENERIC_VISION } from '@/data/generic'
@@ -34,7 +42,18 @@ export const DIM_WEIGHTS: Record<string, Record<string, number>> = {
   不确定度与鲁棒性: { 技术实现: 1 }
 }
 
-export const VISION_KEYWORDS = ['视觉', '摄像头', '相机', '图像', '画面', '识别', '检测', 'maixcam', 'cv', 'yolo']
+export const VISION_KEYWORDS = [
+  '视觉',
+  '摄像头',
+  '相机',
+  '图像',
+  '画面',
+  '识别',
+  '检测',
+  'maixcam',
+  'cv',
+  'yolo'
+]
 
 const MAX_FOLLOWUP_PER_STAGE = 1
 const BASELINE = 62
@@ -85,7 +104,14 @@ export function buildChain(project: Project | null): Question[] {
   const gen = GENERIC_CHAIN.slice()
   const vis = GENERIC_VISION.slice()
   const blob = lower(
-    [project && project.name, project && project.brief, project && project.tech, project && project.progress, project && project.background, project && project.data].join(' ')
+    [
+      project && project.name,
+      project && project.brief,
+      project && project.tech,
+      project && project.progress,
+      project && project.background,
+      project && project.data
+    ].join(' ')
   )
   const isVision = hasAny(blob, VISION_KEYWORDS)
   if (!isVision) return gen
@@ -100,7 +126,14 @@ export function buildChain(project: Project | null): Question[] {
 
 export function isVisionProject(project: Project | null): boolean {
   const blob = lower(
-    [project && project.name, project && project.brief, project && project.tech, project && project.progress, project && project.background, project && project.data].join(' ')
+    [
+      project && project.name,
+      project && project.brief,
+      project && project.tech,
+      project && project.progress,
+      project && project.background,
+      project && project.data
+    ].join(' ')
   )
   return hasAny(blob, VISION_KEYWORDS)
 }
@@ -285,7 +318,7 @@ export function analyze(state: Session, q: Question, text: string): Critique {
       extra.forEach((e) => {
         issues.push(mkIssue(e.kind, e.sev || 'm', e.title, e.detail, e.why || '', e.asks))
       })
-    } catch (err) {
+    } catch {
       /* 规则异常不影响主流程 */
     }
   }
@@ -293,7 +326,21 @@ export function analyze(state: Session, q: Question, text: string): Critique {
   /* --- 追问题：单独规则 --- */
   if (q.isFollowUp) {
     const plan = hasAny(t, ['计划', '打算', '准备', '将', '后面', '接下来', '以后'])
-    const specific = hasAny(t, ['因为', '主要是', '取舍', '对比', '具体', '比如', '原因是', '按比例', '标志位', '分组', '退回', '沿用', '带一个'])
+    const specific = hasAny(t, [
+      '因为',
+      '主要是',
+      '取舍',
+      '对比',
+      '具体',
+      '比如',
+      '原因是',
+      '按比例',
+      '标志位',
+      '分组',
+      '退回',
+      '沿用',
+      '带一个'
+    ])
     if (!hasNum && !mitigate && !plan && !specific && t.length > 0) {
       issues.push(
         mkIssue(
@@ -431,7 +478,14 @@ function collectAsks(issues: Issue[], q: Question): string[] {
 }
 
 function buildSummary(q: Question, verdict: string, issues: Issue[], completeness: number): string {
-  const head = '针对「' + q.topic + '」这一问，你的回答判定为：' + verdict + '（信息完整度约 ' + completeness + '%）。'
+  const head =
+    '针对「' +
+    q.topic +
+    '」这一问，你的回答判定为：' +
+    verdict +
+    '（信息完整度约 ' +
+    completeness +
+    '%）。'
   if (!issues.length) {
     return head + '这一轮没有发现明显缺口，可以继续往更深的层次追问。'
   }
@@ -473,7 +527,12 @@ export function submit(state: Session, text: string, opts?: { isMock?: boolean }
 
   /* 下一步：是否需要插入追问 */
   let nextQ: Question | null = null
-  if (!q.isFollowUp && critique.nextType && critique.nextText && state.followUpsThisStage < MAX_FOLLOWUP_PER_STAGE) {
+  if (
+    !q.isFollowUp &&
+    critique.nextType &&
+    critique.nextText &&
+    state.followUpsThisStage < MAX_FOLLOWUP_PER_STAGE
+  ) {
     nextQ = {
       id: q.id + '_F',
       dim: q.dim,
@@ -505,7 +564,14 @@ export function submit(state: Session, text: string, opts?: { isMock?: boolean }
 
 function applyScore(state: Session, q: Question, critique: Critique): void {
   const w = DIM_WEIGHTS[q.dim] || {}
-  let delta = critique.completeness >= 80 ? 6 : critique.completeness >= 67 ? 3 : critique.criticalCount ? -4 : -1
+  let delta =
+    critique.completeness >= 80
+      ? 6
+      : critique.completeness >= 67
+        ? 3
+        : critique.criticalCount
+          ? -4
+          : -1
   if (critique.paramMissing.length) delta -= 2
   if (critique.issues.some((i) => i.title === '关键表述含糊')) delta -= 1
   if (critique.issues.some((i) => i.title === '绝对化表述')) delta -= 2
@@ -549,7 +615,11 @@ function appendRisks(state: Session, q: Question, critique: Critique): void {
 }
 
 /* ---------------- 报告 ---------------- */
-const ADVICE_LIB: { tier: 'must' | 'should' | 'nice'; when: (r: RiskItem) => boolean; text: string }[] = [
+const ADVICE_LIB: {
+  tier: 'must' | 'should' | 'nice'
+  when: (r: RiskItem) => boolean
+  text: string
+}[] = [
   {
     tier: 'must',
     when: (r) => r.kind === 'data',
@@ -627,7 +697,11 @@ export function buildReport(state: Session): Report {
     byKind[r.kind] = (byKind[r.kind] || 0) + 1
   })
 
-  const advice: { must: string[]; should: string[]; nice: string[] } = { must: [], should: [], nice: [] }
+  const advice: { must: string[]; should: string[]; nice: string[] } = {
+    must: [],
+    should: [],
+    nice: []
+  }
   ADVICE_LIB.forEach((a) => {
     const hit = risks.some((r) => a.when(r))
     if (hit && advice[a.tier].indexOf(a.text) < 0) advice[a.tier].push(a.text)
@@ -679,7 +753,14 @@ export function buildReport(state: Session): Report {
 }
 
 function buildConclusion(crit: number, totalRisks: number, state: Session): string {
-  let head = '本轮模拟质询共进行了 ' + state.rounds.length + ' 轮，识别出 ' + totalRisks + ' 个待处理点，其中高优先级 ' + crit + ' 个。'
+  const head =
+    '本轮模拟质询共进行了 ' +
+    state.rounds.length +
+    ' 轮，识别出 ' +
+    totalRisks +
+    ' 个待处理点，其中高优先级 ' +
+    crit +
+    ' 个。'
   let body: string
   if (crit >= 3)
     body =

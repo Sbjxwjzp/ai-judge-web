@@ -73,22 +73,25 @@ export const useSessionStore = defineStore('session', {
       this.pending = true
       if (isMock) this.draft = t
       return new Promise((resolve) => {
-        setTimeout(() => {
-          const r = submit(ss, t, { isMock: !!isMock })
-          this.pending = false
-          if (r.error) {
-            this.showToast('提交失败：' + r.error)
+        setTimeout(
+          () => {
+            const r = submit(ss, t, { isMock: !!isMock })
+            this.pending = false
+            if (r.error) {
+              this.showToast('提交失败：' + r.error)
+              this.persist()
+              resolve(r)
+              return
+            }
+            this.draft = ''
             this.persist()
+            if (ss.finished) this.showToast('质询链已跑完，可以生成风险报告了')
             resolve(r)
-            return
-          }
-          this.draft = ''
-          this.persist()
-          if (ss.finished) this.showToast('质询链已跑完，可以生成风险报告了')
-          resolve(r)
-          /* 规则判定已返回，异步生成 LLM 深度锐评（失败自动降级） */
-          this.runAiEnhance(ss)
-        }, isMock ? 900 : 700)
+            /* 规则判定已返回，异步生成 LLM 深度锐评（失败自动降级） */
+            this.runAiEnhance(ss)
+          },
+          isMock ? 900 : 700
+        )
       })
     },
 

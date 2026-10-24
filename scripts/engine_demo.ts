@@ -9,7 +9,6 @@ import {
   buildReport,
   currentQuestion,
   mockOf,
-  progress,
   validateProject,
   buildChain
 } from '../src/engine/index'
@@ -47,7 +46,6 @@ while (q && guard < 40) {
   }
   verdicts.push(res.critique ? res.critique.verdict : '')
   if (guard <= 3 || guard % 5 === 0) {
-    const p = progress(state)
     console.log(
       `[R${guard}] ${q.id}${q.isFollowUp ? '(追问)' : ''} 判定=${res.critique?.verdict} 完整度=${res.critique?.completeness} 下一步=${res.nextQuestion ? res.nextQuestion.id : '—'}`
     )
@@ -72,7 +70,12 @@ console.log('\n== 4. 报告生成 ==')
 const report = buildReport(state)
 console.log('风险数:', report.counts.risks, '| 高优先级:', report.counts.critical)
 console.log('风险种类分布:', JSON.stringify(report.byKind))
-console.log('维度分:', report.dims.map((d) => `${d.name}:${d.score}`).join(' '), '| 平均:', report.avg)
+console.log(
+  '维度分:',
+  report.dims.map((d) => `${d.name}:${d.score}`).join(' '),
+  '| 平均:',
+  report.avg
+)
 console.log('建议(must):', report.advice.must.length, '条')
 console.log('视觉专项建议:', report.visionAdvice.length, '条')
 console.log('结论前 100 字:', report.conclusion.slice(0, 100) + '…')
@@ -90,7 +93,11 @@ if (bad.ok || bad.errors.length !== 2) {
   console.error('✗ 校验逻辑异常')
   process.exit(1)
 }
-const good = validateProject({ id: 'x', name: '测试项目', brief: '这是一段足够长的项目简介用于测试校验逻辑是否正常' })
+const good = validateProject({
+  id: 'x',
+  name: '测试项目',
+  brief: '这是一段足够长的项目简介用于测试校验逻辑是否正常'
+})
 console.log('合法项目校验通过:', good.ok)
 
 console.log('\n✅ 引擎单测全部通过')
