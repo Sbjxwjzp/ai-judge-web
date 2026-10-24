@@ -7,8 +7,12 @@
    ============================================================ */
 
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant'
+  role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
+  /** tool 消息：关联的 tool_call id */
+  tool_call_id?: string
+  /** assistant 消息：第一轮决策返回的工具调用 */
+  tool_calls?: unknown[]
 }
 
 export interface LLMConfig {
