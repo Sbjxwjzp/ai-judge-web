@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
+import { generateDeepReport } from '@/services/deepReport'
 import type { Report } from '@/types/engine'
 
 const router = useRouter()
@@ -10,6 +11,24 @@ const sessionStore = useSessionStore()
 const rep = computed<Report | null>(() => sessionStore.report())
 
 const today = new Date().toLocaleDateString('zh-CN')
+
+/** AI 深度评审报告（function calling 流式生成） */
+const deepReportText = ref('')
+const deepReportBusy = ref(false)
+
+async function genDeepReport() {
+  const s = sessionStore.session
+  if (!s || deepReportBusy.value) return
+  deepReportBusy.value = true
+  deepReportText.value = ''
+  const report = await generateDeepReport(s, (t) => {
+    deepReportText.value += t
+  })
+  deepReportBusy.value = false
+  if (!report) {
+    deepReportText.value = '（LLM 未启用或生成失败，已降级为规则引擎报告。请检查 .env 中 VITE_LLM_API_KEY 配置。）'
+  }
+}
 
 function qcode(i: number): string {
   return 'Q_' + (i < 10 ? '0' + i : i)
@@ -57,8 +76,23 @@ function go(view: string) {
           </div>
           <div class="btn-row">
             <button class="btn primary" @click="doPrint">打印 / 导出 PDF</button>
+            <button class="btn warn" :disabled="deepReportBusy" @click="genDeepReport">
+              {{ deepReportBusy ? 'AI 深度评审生成中…' : 'AI 深度评审报告' }}
+            </button>
             <button class="btn ghost" @click="go('review')">返回质询现场</button>
             <button class="btn gray" @click="sessionStore.restart()">重新质询</button>
+          </div>
+        </div>
+
+        <!-- AI 深度评审报告（Function Calling：LLM 自主查赛题知识库 + 按官方评分标准评估） -->
+        <div v-if="deepReportBusy || deepReportText" class="card glow" style="margin-top: 16px">
+          <div class="sec-title">
+            AI 深度评审报告
+            <span v-if="deepReportBusy" class="tag blue">Agent 正在调用工具并生成…</span>
+          </div>
+          <p style="white-space: pre-wrap; font-size: 14.2px; line-height: 1.8; color: #dfe9f5">{{ deepReportText }}</p>
+          <div class="note" style="margin-top: 12px">
+            本报告由大模型依据官方赛题知识库与评分标准自动生成，为<b>模拟评审参考</b>，不代表官方评分。
           </div>
         </div>
 

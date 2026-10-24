@@ -40,13 +40,28 @@ export interface LLMOptions {
   maxTokens?: number
 }
 
+/** OpenAI 兼容 Function 工具定义 */
+export interface ToolDef {
+  type: 'function'
+  function: {
+    name: string
+    description: string
+    parameters: Record<string, unknown>
+  }
+}
+
 interface StreamOptions extends LLMOptions {
   onToken?: (token: string) => void
 }
 
+interface RequestOptions extends LLMOptions {
+  stream: boolean
+  tools?: ToolDef[]
+}
+
 async function request(
   messages: ChatMessage[],
-  opts: LLMOptions & { stream: boolean }
+  opts: RequestOptions
 ): Promise<Response> {
   if (!llmConfig.enabled) throw new LLMError('LLM 未启用（缺少 VITE_LLM_API_KEY）')
   const body: Record<string, unknown> = {
@@ -57,6 +72,7 @@ async function request(
   }
   if (opts.json) body.response_format = { type: 'json_object' }
   if (opts.maxTokens) body.max_tokens = opts.maxTokens
+  if (opts.tools && opts.tools.length) body.tools = opts.tools
 
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? 30000)
@@ -144,4 +160,58 @@ export function extractJson(text: string): unknown {
   const end = cleaned.lastIndexOf('}')
   if (start < 0 || end <= start) throw new LLMError('LLM 输出不是合法 JSON')
   return JSON.parse(cleaned.slice(start, end + 1))
+}
+
+export interface ToolCallMsg {
+  id: string
+  type: 'function'
+  function: { name: string; arguments: string }
+}
+
+/**
+ * Function Calling 对话：
+ * 第一轮带 tools 让模型决策（可能返回 tool_calls）→ 执行工具 →
+ * 第二轮把工具结果送回，流式生成最终回复。
+ * 若模型第一轮直接回答（未调用工具），直接返回该回答。
+ */
+export async function chatWithTools(
+  messages: ChatMessage[],
+  tools: ToolDef[],
+  executor: (name: string, args: Record<string, unknown>) => Promise<string>,
+  opts: StreamOptions = {}
+): Promise<string> {
+  if (!llmConfig.enabled) throw new LLMError('LLM 未启用（缺少 VITE_LLM_API_KEY）')
+
+  /* 第一轮：非流式，拿决策（回答或 tool_calls） */
+  const resp1 = await request(messages, { ...opts, stream: false, tools })
+  const data1 = await resp1.json()
+  const msg1 = data1.choices?.[0]?.message
+  const toolCalls: ToolCallMsg[] = msg1?.tool_calls || []
+  const content1: string = msg1?.content || ''
+
+  if (!toolCalls.length) {
+    if (typeof content1 !== 'string' || !content1) throw new LLMError('LLM 无有效回复')
+    return content1
+  }
+
+  /* 执行工具 */
+  const toolMsgs: ChatMessage[] = []
+  for (const tc of toolCalls) {
+    let args: Record<string, unknown> = {}
+    try {
+      args = tc.function.arguments ? JSON.parse(tc.function.arguments) : {}
+    } catch {
+      /* 参数解析失败时传空对象 */
+    }
+    const result = await executor(tc.function.name, args)
+    toolMsgs.push({ role: 'tool', content: result })
+  }
+
+  /* 第二轮：流式生成最终回复（把 assistant 消息与工具结果送回） */
+  const round2 = [
+    ...messages,
+    { role: 'assistant' as const, content: content1, tool_calls: toolCalls } as ChatMessage,
+    ...toolMsgs
+  ]
+  return chatStream(round2, opts)
 }
