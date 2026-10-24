@@ -6,6 +6,7 @@
      2. Edge headless 已带调试端口启动：
         msedge --headless=new --remote-debugging-port=9222 --user-data-dir=...
    运行：node scripts/e2e_smoke.mjs
+   注意：测试用 Edge 数据目录在项目外（D:/ai-judge-test-data），避免 watcher 噪音
    ============================================================ */
 const BASE = 'http://localhost:5173'
 const CDP = 'http://127.0.0.1:9222'
