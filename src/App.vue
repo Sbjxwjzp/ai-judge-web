@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import TopBar from '@/components/TopBar.vue'
+import AiChat from '@/components/AiChat.vue'
 import { useSessionStore } from '@/stores/session'
 
 const sessionStore = useSessionStore()
@@ -14,6 +15,7 @@ onMounted(() => {
 <template>
   <TopBar />
   <RouterView />
+  <AiChat />
   <footer>
     AI刁钻评委 · 面向大学生创新创业项目的 AI 智能评审与压力测试智能体 ·
     模拟评审工具，不代表任何比赛的官方评审或官方评分
