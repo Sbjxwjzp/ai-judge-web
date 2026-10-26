@@ -11,9 +11,68 @@ const input = ref('')
 const busy = ref(false)
 const streaming = ref('')
 const copiedIndex = ref(-1)
+const attachments = ref<{ id: number; dataUrl: string }[]>([])
+let attachSeq = 1
 const listRef = ref<HTMLDivElement | null>(null)
 
 const WELCOME = '你好，我是 AI 刁钻评委助手。可以问我关于比赛评审、答辩准备、项目改进的问题。'
+
+/** 粘贴图片：压缩到 1024px / JPEG 0.85，防止消息过大 */
+function compressImage(file: File, maxSize = 1024, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new Image()
+      img.onload = () => {
+        let { width, height } = img
+        const scale = Math.min(1, maxSize / Math.max(width, height))
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.max(1, Math.round(width * scale))
+        canvas.height = Math.max(1, Math.round(height * scale))
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(String(reader.result))
+          return
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = () => reject(new Error('图片解析失败'))
+      img.src = String(reader.result)
+    }
+    reader.onerror = () => reject(new Error('图片读取失败'))
+    reader.readAsDataURL(file)
+  })
+}
+
+function onPaste(e: ClipboardEvent) {
+  const items = e.clipboardData?.items
+  if (!items) return
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile()
+      if (file) {
+        if (attachments.value.length >= 4) {
+          return
+        }
+        compressImage(file)
+          .then((dataUrl) => {
+            attachments.value.push({ id: attachSeq++, dataUrl })
+            scrollBottom()
+          })
+          .catch(() => {
+            /* 图片处理失败则忽略 */
+          })
+      }
+      e.preventDefault()
+      break
+    }
+  }
+}
+
+function removeAttachment(id: number) {
+  attachments.value = attachments.value.filter((a) => a.id !== id)
+}
 
 async function copyRaw(text: string, index?: number) {
   try {
@@ -68,21 +127,25 @@ function toggle() {
 
 async function send() {
   const text = input.value.trim()
-  if (!text || busy.value) return
-  messages.value.push({ role: 'user', content: text })
+  if ((!text && !attachments.value.length) || busy.value) return
+  const withImages = attachments.value.map((a) => a.dataUrl)
+  messages.value.push({ role: 'user', content: text || '（发送了一张图片）', images: withImages })
+  attachments.value = []
   input.value = ''
   busy.value = true
   streaming.value = ''
   scrollBottom()
 
-  const reply = await chatAgentReply(messages.value, sessionStore.session?.project || null, (t) => {
+  const res = await chatAgentReply(messages.value, sessionStore.session?.project || null, (t) => {
     streaming.value += t
     scrollBottom()
   })
 
   busy.value = false
-  if (reply) {
-    messages.value.push({ role: 'assistant', content: reply })
+  if (res.text) {
+    messages.value.push({ role: 'assistant', content: res.text })
+  } else if (res.visionWarn) {
+    messages.value.push({ role: 'assistant', content: res.visionWarn })
   } else {
     messages.value.push({
       role: 'assistant',
@@ -146,14 +209,22 @@ function onKeydown(e: KeyboardEvent) {
     </div>
 
     <div class="ai-chat-foot">
+      <!-- 图片附件预览 -->
+      <div v-if="attachments.length" class="attach-row">
+        <div v-for="a in attachments" :key="a.id" class="attach-item">
+          <img :src="a.dataUrl" alt="图片附件" />
+          <button class="attach-del" @click="removeAttachment(a.id)" title="移除图片">✕</button>
+        </div>
+      </div>
       <textarea
         v-model="input"
         rows="2"
-        placeholder="问点什么…（Enter 发送，Shift+Enter 换行）"
+        placeholder="问点什么…（Enter 发送，Shift+Enter 换行，Ctrl+V 可直接粘贴图片）"
         @keydown="onKeydown"
+        @paste="onPaste"
       ></textarea>
       <div class="btn-row" style="margin-top: 8px">
-        <button class="btn primary sm" :disabled="busy || !input.trim()" @click="send">
+        <button class="btn primary sm" :disabled="busy || (!input.trim() && !attachments.length)" @click="send">
           {{ busy ? '生成中…' : '发送' }}
         </button>
         <span class="dim" style="font-size: 11.5px">对话自动检索赛题知识库，回答有依据</span>
