@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useSessionStore } from '@/stores/session'
 import type { Round } from '@/types/engine'
 
@@ -16,6 +16,32 @@ const verdictTag = computed(() => {
   if (c.value.midCount) return 'orange'
   return 'green'
 })
+
+/** AI 深度锐评：定稿后打字机逐字播放（不显示 LLM 原始 JSON 流） */
+const displayText = ref('')
+let typeTimer: ReturnType<typeof setInterval> | null = null
+
+watch(
+  () => c.value.aiSummary,
+  (val) => {
+    if (typeTimer) clearInterval(typeTimer)
+    if (!val) {
+      displayText.value = ''
+      return
+    }
+    displayText.value = ''
+    let i = 0
+    typeTimer = setInterval(() => {
+      i += 2
+      displayText.value = val.slice(0, i)
+      if (i >= val.length) {
+        if (typeTimer) clearInterval(typeTimer)
+        typeTimer = null
+      }
+    }, 16)
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -29,14 +55,16 @@ const verdictTag = computed(() => {
       <span class="tag">完整度 {{ c.completeness }}%</span>
     </div>
 
-    <!-- LLM 深度锐评（打字机流式 → 定稿；未启用/失败时此区不出现） -->
-    <div v-if="c.aiSummary || sessionStore.aiStreaming" class="ai-note">
+    <!-- LLM 深度锐评（生成中显示占位，定稿后打字机播放；未启用/失败时此区不出现） -->
+    <div v-if="c.aiSummary || sessionStore.aiBusy" class="ai-note">
       <div class="ai-head">
         <span class="t">AI 深度锐评</span>
         <span v-if="sessionStore.aiBusy" class="tag blue">生成中…</span>
       </div>
-      <p class="ai-text">{{ sessionStore.aiStreaming ? sessionStore.aiStreaming : c.aiSummary }}</p>
-      <template v-if="!sessionStore.aiStreaming && c.aiAsks && c.aiAsks.length">
+      <p class="ai-text">
+        {{ sessionStore.aiBusy ? 'AI 评审官正在对照赛题评分标准组织语言…' : displayText }}
+      </p>
+      <template v-if="!sessionStore.aiBusy && c.aiAsks && c.aiAsks.length">
         <div class="k" style="margin: 10px 0 4px">评委最可能继续追问</div>
         <ul>
           <li v-for="(a, idx) in c.aiAsks" :key="idx">{{ a }}</li>
