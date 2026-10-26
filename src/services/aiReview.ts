@@ -3,7 +3,7 @@
    流程：规则引擎给出判定骨架 → 调用 LLM 生成锐评增强
    失败/未配置 key 时返回 null，界面自动降级为纯规则引擎版本
    ============================================================ */
-import { chatStream, extractJson, llmConfig, LLMError } from './llm'
+import { chatStream, extractJson, getLLMConfig, LLMError } from './llm'
 import { buildSystemPrompt, buildUserPrompt } from './prompts'
 import { searchKB, formatKBContext } from './rag'
 import type { Project, Question, Critique } from '@/types/engine'
@@ -25,7 +25,7 @@ export async function enhanceCritique(
   critique: Critique,
   onToken?: (token: string) => void
 ): Promise<AIEnhancement | null> {
-  if (!llmConfig.enabled) return null
+  if (!getLLMConfig().enabled) return null
 
   /* RAG：以 问题+回答+判定 为 query 检索赛题知识库，注入 Prompt */
   const kbContext = formatKBContext(

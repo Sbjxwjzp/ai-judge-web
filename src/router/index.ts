@@ -8,7 +8,8 @@ const router = createRouter({
     { path: '/library', name: 'library', component: () => import('@/views/LibraryView.vue') },
     { path: '/input', name: 'input', component: () => import('@/views/InputView.vue') },
     { path: '/review', name: 'review', component: () => import('@/views/ReviewView.vue') },
-    { path: '/report', name: 'report', component: () => import('@/views/ReportView.vue') }
+    { path: '/report', name: 'report', component: () => import('@/views/ReportView.vue') },
+    { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue') }
   ],
   scrollBehavior() {
     return { top: 0 }

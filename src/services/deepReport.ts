@@ -5,7 +5,7 @@
    2. 工具结果送回 LLM
    3. 流式生成对标官方评分标准的深度评审报告
    ============================================================ */
-import { chatWithTools, llmConfig, LLMError } from './llm'
+import { chatWithTools, getLLMConfig, LLMError } from './llm'
 import { CONTEST_TOOLS, executeTool } from './tools'
 import type { Session } from '@/types/engine'
 
@@ -82,7 +82,7 @@ export async function generateDeepReport(
   session: Session,
   onToken?: (token: string) => void
 ): Promise<string | null> {
-  if (!llmConfig.enabled) return null
+  if (!getLLMConfig().enabled) return null
   try {
     return await chatWithTools(
       [

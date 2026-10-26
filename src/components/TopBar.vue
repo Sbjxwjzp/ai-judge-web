@@ -10,7 +10,8 @@ const sessionStore = useSessionStore()
 const navItems = [
   { view: 'home', label: '首页' },
   { view: 'library', label: '项目库' },
-  { view: 'input', label: '输入我的项目' }
+  { view: 'input', label: '输入我的项目' },
+  { view: 'settings', label: '设置' }
 ]
 
 function go(view: string) {

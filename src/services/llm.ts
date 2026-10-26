@@ -22,19 +22,59 @@ export interface LLMConfig {
   enabled: boolean
 }
 
-function readConfig(): LLMConfig {
+/** 应用内配置（localStorage 键名，设置页写入） */
+export const LLM_CONFIG_LS_KEY = 'aij_llm_config_v1'
+
+export interface SavedLLMConfig {
+  apiKey: string
+  baseUrl: string
+  model: string
+}
+
+const ENV_DEFAULT_BASE = 'https://api.deepseek.com/v1'
+const ENV_DEFAULT_MODEL = 'deepseek-chat'
+
+function readEnvConfig(): LLMConfig {
   const apiKey = (import.meta.env.VITE_LLM_API_KEY as string) || ''
   const baseUrl = (
-    (import.meta.env.VITE_LLM_BASE_URL as string) || 'https://api.deepseek.com/v1'
+    (import.meta.env.VITE_LLM_BASE_URL as string) || ENV_DEFAULT_BASE
   ).replace(/\/+$/, '')
-  const model = (import.meta.env.VITE_LLM_MODEL as string) || 'deepseek-chat'
+  const model = (import.meta.env.VITE_LLM_MODEL as string) || ENV_DEFAULT_MODEL
   /* 占位符（含中文/非 ASCII）视为未配置，避免误发请求 */
   const looksReal = apiKey.length > 0 && !/[^\x00-\x7F]/.test(apiKey)
   const enabled = looksReal && (import.meta.env.VITE_LLM_ENABLED as string) !== 'false'
   return { apiKey, baseUrl, model, enabled }
 }
 
-export const llmConfig: LLMConfig = readConfig()
+function looksRealKey(key: string): boolean {
+  return key.length > 0 && !/[^\x00-\x7F]/.test(key)
+}
+
+/**
+ * 动态读取 LLM 配置：优先应用内设置（localStorage），否则回退环境变量。
+ * 这样在线部署版（无 .env）也能通过设置页接入任意 OpenAI 兼容 API。
+ */
+export function getLLMConfig(): LLMConfig {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(LLM_CONFIG_LS_KEY)
+      if (raw) {
+        const s = JSON.parse(raw) as Partial<SavedLLMConfig>
+        if (s && typeof s.apiKey === 'string' && looksRealKey(s.apiKey)) {
+          return {
+            apiKey: s.apiKey,
+            baseUrl: (s.baseUrl || ENV_DEFAULT_BASE).replace(/\/+$/, ''),
+            model: s.model || ENV_DEFAULT_MODEL,
+            enabled: true
+          }
+        }
+      }
+    }
+  } catch {
+    /* localStorage 不可用时回退环境变量 */
+  }
+  return readEnvConfig()
+}
 
 export class LLMError extends Error {}
 
@@ -66,9 +106,10 @@ interface RequestOptions extends LLMOptions {
 }
 
 async function request(messages: ChatMessage[], opts: RequestOptions): Promise<Response> {
-  if (!llmConfig.enabled) throw new LLMError('LLM 未启用（缺少 VITE_LLM_API_KEY）')
+  const cfg = getLLMConfig()
+  if (!cfg.enabled) throw new LLMError('LLM 未启用（未配置 API Key）')
   const body: Record<string, unknown> = {
-    model: llmConfig.model,
+    model: cfg.model,
     messages,
     stream: opts.stream,
     temperature: opts.temperature ?? 0.4
@@ -86,11 +127,11 @@ async function request(messages: ChatMessage[], opts: RequestOptions): Promise<R
 
   let resp: Response
   try {
-    resp = await fetch(llmConfig.baseUrl + '/chat/completions', {
+    resp = await fetch(cfg.baseUrl + '/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + llmConfig.apiKey
+        Authorization: 'Bearer ' + cfg.apiKey
       },
       body: JSON.stringify(body),
       signal: ctrl.signal
@@ -101,11 +142,11 @@ async function request(messages: ChatMessage[], opts: RequestOptions): Promise<R
     }
     /* 网络错误自动重试一次 */
     try {
-      resp = await fetch(llmConfig.baseUrl + '/chat/completions', {
+      resp = await fetch(cfg.baseUrl + '/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + llmConfig.apiKey
+          Authorization: 'Bearer ' + cfg.apiKey
         },
         body: JSON.stringify(body),
         signal: ctrl.signal
@@ -204,7 +245,7 @@ export async function chatWithTools(
   executor: (name: string, args: Record<string, unknown>) => Promise<string>,
   opts: StreamOptions = {}
 ): Promise<string> {
-  if (!llmConfig.enabled) throw new LLMError('LLM 未启用（缺少 VITE_LLM_API_KEY）')
+  if (!getLLMConfig().enabled) throw new LLMError('LLM 未启用（未配置 API Key）')
 
   /* 第一轮：非流式，拿决策（回答或 tool_calls） */
   const resp1 = await request(messages, { ...opts, stream: false, tools })
