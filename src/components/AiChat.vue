@@ -10,9 +10,47 @@ const messages = ref<ChatMsg[]>([])
 const input = ref('')
 const busy = ref(false)
 const streaming = ref('')
+const copiedIndex = ref(-1)
 const listRef = ref<HTMLDivElement | null>(null)
 
 const WELCOME = '你好，我是 AI 刁钻评委助手。可以问我关于比赛评审、答辩准备、项目改进的问题。'
+
+async function copyRaw(text: string, index?: number) {
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    /* 旧浏览器回退：隐藏 textarea + execCommand */
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    try {
+      document.execCommand('copy')
+    } catch {
+      /* ignore */
+    }
+    ta.remove()
+  }
+  if (index !== undefined) {
+    copiedIndex.value = index
+    setTimeout(() => {
+      if (copiedIndex.value === index) copiedIndex.value = -1
+    }, 2000)
+  }
+}
+
+function copyMsg(content: string, index: number) {
+  copyRaw(content, index)
+}
+
+function copyAll() {
+  const text = messages.value
+    .map((m) => (m.role === 'user' ? '我：' : 'AI：') + m.content)
+    .join('\n\n')
+  copyRaw(text)
+}
 
 function scrollBottom() {
   nextTick(() => {
@@ -83,6 +121,7 @@ function onKeydown(e: KeyboardEvent) {
         <div class="s">智能体模式 · 可问评审/答辩/项目问题</div>
       </div>
       <div class="btn-row" style="gap: 6px">
+        <button class="btn gray sm" title="复制全部对话" @click="copyAll()">复制对话</button>
         <button class="btn gray sm" @click="clearChat">清空</button>
         <button class="btn gray sm" @click="toggle">收起</button>
       </div>
@@ -90,6 +129,15 @@ function onKeydown(e: KeyboardEvent) {
 
     <div ref="listRef" class="ai-chat-body">
       <div v-for="(m, i) in messages" :key="i" class="chat-msg" :class="m.role">
+        <button
+          v-if="m.role === 'assistant'"
+          class="chat-copy"
+          :class="{ done: copiedIndex === i }"
+          :title="copiedIndex === i ? '已复制' : '复制这条回复'"
+          @click="copyMsg(m.content, i)"
+        >
+          {{ copiedIndex === i ? '✓' : '⧉' }}
+        </button>
         <div class="bubble">{{ m.content }}</div>
       </div>
       <div v-if="busy" class="chat-msg assistant">

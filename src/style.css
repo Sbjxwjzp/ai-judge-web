@@ -1291,9 +1291,37 @@ footer {
 }
 .chat-msg {
   display: flex;
+  align-items: flex-end;
+  gap: 6px;
 }
 .chat-msg.user {
   justify-content: flex-end;
+}
+/* 复制按钮：悬停显示，assistant 消息在气泡左侧 */
+.chat-copy {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: var(--txt-3);
+  background: rgba(4, 8, 15, 0.6);
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0;
+  transition: 0.15s;
+}
+.chat-msg:hover .chat-copy {
+  opacity: 1;
+}
+.chat-copy:hover {
+  color: #cfe3ff;
+  border-color: var(--line-strong);
+}
+.chat-copy.done {
+  color: #7ee787;
+  border-color: rgba(63, 185, 80, 0.5);
+  opacity: 1;
 }
 .chat-msg .bubble {
   max-width: 82%;
