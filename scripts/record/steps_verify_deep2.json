@@ -1,0 +1,7 @@
+[
+  { "action": "goto", "url": "http://localhost:5173/report" },
+  { "action": "wait", "ms": 3500 },
+  { "action": "click", "text": "AI 深度评审报告" },
+  { "action": "waitFor", "expr": "(() => { const cards=[...document.querySelectorAll('.card.glow')]; const c=cards.find(x=>x.innerText.includes('AI 深度评审报告')); return !!c && c.innerText.length>800 && !c.innerText.includes('DSML') && !document.body.innerText.includes('生成中') })()", "timeout": 120000 },
+  { "action": "log", "msg": "报告生成成功且无 DSML 标记（修复生效）" }
+]

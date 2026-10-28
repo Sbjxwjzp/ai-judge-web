@@ -143,6 +143,9 @@ for (let i = 0; i < steps.length; i++) {
         /* 平滑滚动（正数向下） */
         await client.eval(`window.scrollBy({ top: ${Number(s.y) || 400}, behavior: 'smooth' })`)
         break
+      case 'scrollTop':
+        await client.eval(`window.scrollTo({ top: 0, behavior: 'smooth' })`)
+        break
       case 'goto':
         await client.send('Page.navigate', { url: s.url })
         break

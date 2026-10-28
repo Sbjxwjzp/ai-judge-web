@@ -1,12 +1,12 @@
 /* ============================================================
-   AI 深度评审报告（Function Calling / Agent 工作流）
-   用户点「生成 AI 深度评审报告」后：
-   1. LLM 自主决定调用工具（查官方赛题知识库 / 按官方评分标准评估）
-   2. 工具结果送回 LLM
-   3. 流式生成对标官方评分标准的深度评审报告
+   AI 深度评审报告
+   实现方式：前端预检索（RAG）+ 单轮流式生成（稳定优先）
+   - 官方评分标准与考察点由本地知识库检索注入 Prompt
+   - 避免多轮 Function Calling 在不同模型间的兼容差异
+   - 工具定义与执行器保留在 services/tools.ts（可选 Agent 模式）
    ============================================================ */
-import { chatWithTools, getLLMConfig, LLMError } from './llm'
-import { CONTEST_TOOLS, executeTool } from './tools'
+import { chatStream, getLLMConfig, LLMError } from './llm'
+import { searchKB, formatKBContext } from './rag'
 import type { Session } from '@/types/engine'
 
 const SCORE_BRIEF =
@@ -17,10 +17,9 @@ function buildDeepReportSystem(): string {
   return [
     '你是「AI刁钻评委」的资深评审委员会主席，为大学生创新创业项目撰写《AI 深度评审报告》。',
     '',
-    '工作方式：',
-    '1. 对照官方评分标准评审本项目时，先调用 search_contest_kb 核对官方考察点（不要凭记忆）。',
-    '2. 需要给出维度得分时，调用 score_against_standards 获取官方权重后评估。',
-    '3. 最终以流式文本输出完整报告（不要 JSON，不要 markdown 标题符号）。',
+    '写作要求：',
+    '1. 下方提供了官方赛题评分标准与考察点（已从知识库检索），评审必须严格对照这些标准，不要凭记忆编造。',
+    '2. 直接输出报告正文（不要 JSON、不要 markdown 标题符号、不要任何工具调用标记）。',
     '',
     '铁律：',
     '1. 绝不虚构任何数据（实验结果、样本量、识别率、用户量、合作方）。项目资料没有的量化结果，只能标注"缺失/待验证"。',
@@ -36,14 +35,13 @@ function buildDeepReportSystem(): string {
   ].join('\n')
 }
 
-function buildDeepReportUser(session: Session): string {
+function buildDeepReportUser(session: Session, kbContext: string): string {
   const p = session.project
   const rounds = session.rounds.map((r) => {
     return `【第${r.no}轮${r.q.isFollowUp ? '（追问）' : ''}】问题（${r.q.dim}·${r.q.topic}）：${r.q.text}\n回答：${r.answer}\n判定：${r.critique.verdict}（完整度 ${r.critique.completeness}%）`
   })
 
-  const dims = session.dims
-  const dimLines = Object.entries(dims).map(
+  const dimLines = Object.entries(session.dims).map(
     ([name, d]) => `${name}: ${d.score}分（${d.notes.join('；') || '未触及'}）`
   )
 
@@ -60,18 +58,25 @@ function buildDeepReportUser(session: Session): string {
     '',
     '【规则引擎汇总】',
     '维度分：' + dimLines.join(' | '),
-    '风险计数：' +
-      session.risks.length +
-      ' 个（高优先级 ' +
-      session.risks.filter((r) => r.sev === 'h').length +
-      '）',
+    '风险计数：' + session.risks.length + ' 个（高优先级 ' + session.risks.filter((r) => r.sev === 'h').length + '）',
     '',
-    '【官方评分权重参考】' + SCORE_BRIEF,
+    '【官方评分标准参考】' + SCORE_BRIEF,
     '',
-    '请调用工具核对标准后，输出《AI 深度评审报告》。'
+    kbContext,
+    '',
+    '请对照以上官方评分标准，输出《AI 深度评审报告》正文。'
   ]
     .filter((l) => l !== '')
     .join('\n')
+}
+
+/** 清理模型可能输出的工具调用标记（DSML 等），保证报告为纯文本 */
+function cleanReportText(text: string): string {
+  return text
+    .replace(/<\|+\s*DSML\s*\|+[\s\S]*?<\/\|+\s*DSML\s*\|+[^>]*>/gi, '')
+    .replace(/<\/?\|+\s*DSML\s*\|+[^>]*>/gi, '')
+    .replace(/<\|+\s*DSML\s*\|+[\s\S]*$/gi, '')
+    .trim()
 }
 
 /**
@@ -83,16 +88,21 @@ export async function generateDeepReport(
   onToken?: (token: string) => void
 ): Promise<string | null> {
   if (!getLLMConfig().enabled) return null
+
+  /* 前端预检索：官方评分标准与考察点（RAG） */
+  const kbContext = formatKBContext(
+    searchKB('评分标准 AI技术深度 考察点 权重 前端工程 用户体验 社会价值 商业潜力', 3)
+  )
+
   try {
-    return await chatWithTools(
+    const text = await chatStream(
       [
         { role: 'system', content: buildDeepReportSystem() },
-        { role: 'user', content: buildDeepReportUser(session) }
+        { role: 'user', content: buildDeepReportUser(session, kbContext) }
       ],
-      CONTEST_TOOLS,
-      executeTool,
       { timeoutMs: 120000, temperature: 0.4, onToken }
     )
+    return cleanReportText(text)
   } catch (e) {
     console.warn('[deepReport] 生成失败，降级：', e instanceof LLMError ? e.message : e)
     return null
