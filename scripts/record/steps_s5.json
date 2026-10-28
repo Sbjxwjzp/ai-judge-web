@@ -1,0 +1,12 @@
+[
+  { "action": "click", "text": "返回质询现场" },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('CURRENT QUESTION')", "timeout": 12000 },
+  { "action": "wait", "ms": 7000 },
+  { "action": "goto", "url": "http://localhost:5173/review" },
+  { "action": "wait", "ms": 6000 },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('CURRENT QUESTION') || document.body.innerText.includes('质询结束')", "timeout": 15000 },
+  { "action": "wait", "ms": 12000 },
+  { "action": "scroll", "y": 450 },
+  { "action": "wait", "ms": 10000 },
+  { "action": "log", "msg": "S5 完成（会话恢复）" }
+]

@@ -1,0 +1,18 @@
+[
+  { "action": "goto", "url": "http://localhost:5173/home" },
+  { "action": "wait", "ms": 3200 },
+  { "action": "click", "text": "输入我的项目" },
+  { "action": "wait", "ms": 2600 },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('只填你真实掌握的内容')", "timeout": 6000 },
+  { "action": "click", "text": "用示例内容查看填写格式" },
+  { "action": "wait", "ms": 2500 },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('视觉专项')", "timeout": 6000 },
+  { "action": "wait", "ms": 9000 },
+  { "action": "scroll", "y": 520 },
+  { "action": "wait", "ms": 11000 },
+  { "action": "scroll", "y": 520 },
+  { "action": "wait", "ms": 11000 },
+  { "action": "scroll", "y": -2200 },
+  { "action": "wait", "ms": 7000 },
+  { "action": "log", "msg": "S3 完成（输入项目表单·修正版）" }
+]

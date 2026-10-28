@@ -269,7 +269,8 @@ export async function chatWithTools(
       /* 参数解析失败时传空对象 */
     }
     const result = await executor(tc.function.name, args)
-    toolMsgs.push({ role: 'tool', content: result })
+    /* OpenAI 兼容 API 要求 tool 消息必须回带 tool_call_id */
+    toolMsgs.push({ role: 'tool', content: result, tool_call_id: tc.id })
   }
 
   /* 第二轮：流式生成最终回复（把 assistant 消息与工具结果送回） */

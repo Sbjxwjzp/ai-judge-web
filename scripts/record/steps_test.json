@@ -1,0 +1,7 @@
+[
+  { "action": "wait", "ms": 2500 },
+  { "action": "click", "text": "快速体验" },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('CURRENT QUESTION')", "timeout": 12000 },
+  { "action": "wait", "ms": 5000 },
+  { "action": "log", "msg": "验证段完成" }
+]

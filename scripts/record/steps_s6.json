@@ -1,0 +1,9 @@
+[
+  { "action": "goto", "url": "http://localhost:5173/home" },
+  { "action": "wait", "ms": 5000 },
+  { "action": "scroll", "y": 320 },
+  { "action": "wait", "ms": 12000 },
+  { "action": "scroll", "y": -320 },
+  { "action": "wait", "ms": 7000 },
+  { "action": "log", "msg": "S6 完成（总结）" }
+]

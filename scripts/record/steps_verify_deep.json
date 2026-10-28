@@ -1,0 +1,15 @@
+[
+  { "action": "goto", "url": "http://localhost:5173/home" },
+  { "action": "wait", "ms": 3000 },
+  { "action": "click", "text": "快速体验" },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('CURRENT QUESTION')", "timeout": 12000 },
+  { "action": "click", "text": "模拟回答" },
+  { "action": "wait", "ms": 4000 },
+  { "action": "click", "text": "模拟回答" },
+  { "action": "wait", "ms": 4500 },
+  { "action": "click", "text": "结束并出报告" },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('模拟评审报告')", "timeout": 10000 },
+  { "action": "click", "text": "AI 深度评审报告" },
+  { "action": "waitFor", "expr": "(() => { const t = document.querySelector('.card.glow p')?.innerText || ''; return t.length > 300 && !t.includes('生成失败') })()", "timeout": 150000 },
+  { "action": "log", "msg": "AI 深度评审报告生成成功（验证通过）" }
+]

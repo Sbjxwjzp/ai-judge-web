@@ -1,0 +1,15 @@
+[
+  { "action": "goto", "url": "http://localhost:5173/home" },
+  { "action": "wait", "ms": 3500 },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('让你的项目先接受一次 AI 压力测试')", "timeout": 10000 },
+  { "action": "wait", "ms": 14000 },
+  { "action": "scroll", "y": 520 },
+  { "action": "wait", "ms": 15000 },
+  { "action": "scroll", "y": 520 },
+  { "action": "wait", "ms": 15000 },
+  { "action": "scroll", "y": 620 },
+  { "action": "wait", "ms": 15000 },
+  { "action": "scroll", "y": -2000 },
+  { "action": "wait", "ms": 12000 },
+  { "action": "log", "msg": "S1 完成（开场+项目介绍）" }
+]

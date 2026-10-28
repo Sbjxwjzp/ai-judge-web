@@ -1,0 +1,20 @@
+[
+  { "action": "wait", "ms": 1500 },
+  { "action": "click", "text": "结束并出报告" },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('模拟评审报告')", "timeout": 10000 },
+  { "action": "wait", "ms": 8000 },
+  { "action": "scroll", "y": 550 },
+  { "action": "wait", "ms": 9000 },
+  { "action": "scroll", "y": 550 },
+  { "action": "wait", "ms": 9000 },
+  { "action": "scroll", "y": -2000 },
+  { "action": "wait", "ms": 2500 },
+  { "action": "click", "text": "AI 深度评审报告" },
+  { "action": "waitFor", "expr": "(document.querySelector('.card.glow p')?.innerText || '').length > 300", "timeout": 75000 },
+  { "action": "wait", "ms": 10000 },
+  { "action": "scroll", "y": 650 },
+  { "action": "wait", "ms": 10000 },
+  { "action": "scroll", "y": 650 },
+  { "action": "wait", "ms": 10000 },
+  { "action": "log", "msg": "S4 完成（报告+AI深度评审）" }
+]

@@ -1,0 +1,15 @@
+[
+  { "action": "goto", "url": "http://localhost:5173/home" },
+  { "action": "wait", "ms": 3000 },
+  { "action": "click", "text": "快速体验" },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('CURRENT QUESTION')", "timeout": 12000 },
+  { "action": "wait", "ms": 7000 },
+  { "action": "click", "text": "模拟回答" },
+  { "action": "waitFor", "expr": "document.querySelectorAll('.critique').length >= 1", "timeout": 20000 },
+  { "action": "wait", "ms": 13000 },
+  { "action": "click", "text": "模拟回答" },
+  { "action": "wait", "ms": 15000 },
+  { "action": "click", "text": "模拟回答" },
+  { "action": "wait", "ms": 17000 },
+  { "action": "log", "msg": "S2 完成（质询3轮）" }
+]
