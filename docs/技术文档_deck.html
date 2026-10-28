@@ -107,7 +107,7 @@
       <span class="tag">Vue 3 + TypeScript</span>
       <span class="tag">Agent 质询工作流</span>
       <span class="tag">本地 RAG 检索增强</span>
-      <span class="tag">Function Calling 工具</span>
+      <span class="tag">检索增强深度评审</span>
     </div>
     <div class="meta">
       <div><span class="k">参赛团队</span><span class="blank"></span></div>
@@ -228,7 +228,7 @@
     <div class="arwd">↑ AI 能力层 ↓</div>
     <div class="layer ai"><div class="ln">SERVICES · AI 能力（全部浏览器端调用，失败自动降级）</div>
       <div class="box"><span>llm 流式客户端</span><span>aiReview 锐评增强</span><span>rag 本地检索</span>
-        <span>tools Function Calling</span><span>deepReport 深度评审</span><span>voice 语音</span><span>safety 安全</span></div></div>
+        <span>tools 工具定义</span><span>deepReport 深度评审</span><span>voice 语音</span><span>safety 安全</span></div></div>
   </div>
   <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
 </section>
@@ -324,20 +324,20 @@
   <div class="flow" style="margin-top:10pt">
     <div class="step"><b>收集材料</b>项目资料 + 全部质询轮次 + 规则引擎汇总</div>
     <div class="arw">→</div>
-    <div class="step"><b>Agent 决策</b>LLM 自主决定调用哪些工具</div>
+    <div class="step"><b>本地预检索</b>RAG 检索官方评分标准与考察点</div>
     <div class="arw">→</div>
-    <div class="step"><b>执行工具</b>查知识库 / 按评分表评估</div>
+    <div class="step"><b>标准对齐</b>六大维度权重结构化注入 Prompt</div>
     <div class="arw">→</div>
     <div class="step"><b>流式成稿</b>深度评审报告</div>
   </div>
   <table style="margin-top:18pt">
-    <tr><th>工具</th><th>说明</th><th>对应评分考察点</th></tr>
-    <tr><td><b style="color:#7cc4ff">search_contest_kb</b></td><td>检索官方赛题知识库（评分权重 / 考察点）</td><td>RAG 技术应用 · 工具集成</td></tr>
-    <tr><td><b style="color:#7cc4ff">score_against_standards</b></td><td>按官方评分维度返回权重与评估依据</td><td>Agent 自主决策 · 输出可控</td></tr>
+    <tr><th>模块</th><th>说明</th><th>对应评分考察点</th></tr>
+    <tr><td><b style="color:#7cc4ff">searchKB 本地检索</b></td><td>检索官方赛题知识库 16 块（评分权重 / 考察点）</td><td>RAG 技术应用 · 工具集成</td></tr>
+    <tr><td><b style="color:#7cc4ff">评分权重表</b></td><td>六大维度权重与考察点结构化注入，约束输出对齐标准</td><td>输出可控 · 标准对齐</td></tr>
   </table>
   <div class="quote" style="margin-top:14pt">
-    <p>两轮对话模式：第一轮带工具列表让模型<b>自主规划</b>，执行工具后把结果送回，
-    第二轮流式生成对标官方评分标准的报告（总体判断 → 逐维分析 → 三大风险 → 答辩清单）。</p>
+    <p>设计取舍：初期实现为标准 Function Calling 两轮调用（<b>tools.ts 保留该实现</b>）；实测部分模型在工具结果回传后会输出内部工具标记、污染报告正文，因此正式版改为
+    <b>前端预检索 + 单轮流式生成</b>——工具逻辑前置为确定性步骤，生成阶段只做一次调用，<b>更稳、更快、无工具格式兼容风险</b>。</p>
   </div>
   <div class="ft"><span>AI刁钻评委 · 技术文档</span><span>第 <b class="pn"></b> 页 / 共 <b class="ptot"></b> 页</span></div>
 </section>
@@ -532,9 +532,9 @@
     <div class="card blue"><span class="num">技术 02</span><h4>本地 RAG 对齐官方标准</h4>
       <p>赛题评分标准做知识库、浏览器端词频检索、每轮锐评自动注入，
       <b>零依赖实现检索增强生成</b>，评审意见落到官方考察点。</p></div>
-    <div class="card blue"><span class="num">技术 03</span><h4>Agent 自主工具调用</h4>
-      <p>深度评审报告由 LLM 自主决定调用"查知识库 / 评分表评估"，
-      Function Calling 两轮对话，真实 Agent 工作流。</p></div>
+    <div class="card blue"><span class="num">技术 03</span><h4>检索增强的智能体工作流</h4>
+      <p>深度评审报告采用<b>本地预检索 + 单轮流式生成</b>：官方评分标准先检索、
+      再结构化注入，报告逐维对标官方权重，稳定可复现。</p></div>
     <div class="card orange"><span class="num">应用 01</span><h4>答辩前压力测试</h4>
       <p>把"没人帮挑毛病"变成"AI 连续压测"，
       输出<b>逐条可执行的改进清单</b>，直接进答辩准备。</p></div>
