@@ -1,7 +1,8 @@
 [
-  { "action": "wait", "ms": 1500 },
+  { "action": "goto", "url": "http://localhost:5173/review" },
+  { "action": "wait", "ms": 3500 },
   { "action": "click", "text": "结束并出报告" },
-  { "action": "waitFor", "expr": "document.body.innerText.includes('模拟评审报告')", "timeout": 10000 },
+  { "action": "waitFor", "expr": "document.body.innerText.includes('模拟评审报告')", "timeout": 12000 },
   { "action": "wait", "ms": 7000 },
   { "action": "scroll", "y": 520 },
   { "action": "wait", "ms": 8000 },
@@ -10,11 +11,11 @@
   { "action": "scrollTop" },
   { "action": "wait", "ms": 2500 },
   { "action": "click", "text": "AI 深度评审报告" },
-  { "action": "waitFor", "expr": "(() => { const cards = [...document.querySelectorAll('.card.glow')]; return cards.some(c => c.innerText.includes('AI 深度评审报告') && c.innerText.length > 600) && !document.body.innerText.includes('AI 深度评审生成中') })()", "timeout": 90000 },
+  { "action": "waitFor", "expr": "(() => { const cards = [...document.querySelectorAll('.card.glow')]; return cards.some(c => c.innerText.includes('AI 深度评审报告') && c.innerText.length > 800 && !c.innerText.includes('DSML')) && !document.body.innerText.includes('生成中') })()", "timeout": 90000 },
   { "action": "wait", "ms": 22000 },
   { "action": "scroll", "y": 420 },
   { "action": "wait", "ms": 12000 },
   { "action": "scroll", "y": 420 },
   { "action": "wait", "ms": 12000 },
-  { "action": "log", "msg": "S4 完成（深度报告·选择器修正版）" }
+  { "action": "log", "msg": "S4 完成（预检索版深度报告）" }
 ]
